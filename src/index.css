@@ -8,3 +8,32 @@
      height: 100vh;
      overflow: hidden;
  }
+
+/* src/index.css */
+.css-dotted-border {
+    /* Reserve space for the border but make it transparent */
+    border: 2px solid transparent;
+    /* Create circular dots with radial-gradient */
+    background: repeating-radial-gradient(
+            circle at center,
+            #000 0px,
+            #000 2px, /* 4px diameter dot (2px radius) */
+            transparent 2px,
+            transparent 6px /* 4px dot + 8px gap = 12px cycle (6px radius total) */
+    );
+    background-size: 12px 12px; /* Match the cycle length (4px dot + 8px gap) */
+    background-position: -2px -2px; /* Shift to align dots with the border */
+    /* Use clip-path to exclude the interior, leaving a 2px thick border area */
+    clip-path: polygon(
+            0 0,
+            100% 0,
+            100% 100%,
+            0 100%,
+            0 0,
+            2px 2px,
+            2px calc(100% - 2px),
+            calc(100% - 2px) calc(100% - 2px),
+            calc(100% - 2px) 2px,
+            2px 2px
+    );
+}

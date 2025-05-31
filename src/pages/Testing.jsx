@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 
 const Testing = () => {
     const [step, setStep] = useState(1);
@@ -110,8 +111,6 @@ const Testing = () => {
                 alert('Failed to submit form. Please try again.');
             } finally {
                 setIsSubmitting(false);
-                setCityPrompt('Thank you!');
-                setCityPlaceholder('Proceed to the next step.');
                 handleTransition(3);
             }
         },
@@ -151,7 +150,7 @@ const Testing = () => {
                     <form
                         key="name-form"
                         onSubmit={handleNameSubmit}
-                        className={`relative z-10 transition-opacity duration-300 ${
+                        className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 transition-opacity duration-300 ${
                             isTransitioning ? 'opacity-0' : 'opacity-100'
                         }`}
                     >
@@ -177,7 +176,7 @@ const Testing = () => {
                     <form
                         key="city-form"
                         onSubmit={handleLocationSubmit}
-                        className={`relative z-10 transition-opacity duration-300 ${
+                        className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 transition-opacity duration-300 ${
                             isTransitioning ? 'opacity-0' : 'opacity-100'
                         }`}
                     >
@@ -204,23 +203,25 @@ const Testing = () => {
                     </form>
                 ) : step === 3 ? (
                     <div
-                        className={`relative z-10 flex flex-col items-center transition-opacity duration-300 ${
+                        className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center transition-opacity duration-300 ${
                             isTransitioning ? 'opacity-0' : 'opacity-100'
                         }`}
                     >
                         <p className="text-sm text-gray-400 tracking-wider uppercase mb-1 pointer-events-none">
                             Thank you!
                         </p>
-                        <button
-                            onClick={handleProceed}
-                            className="text-lg text-black border-b border-black"
-                        >
-                            Proceed to the next step.
-                        </button>
+                        <Link to={"/result"}>
+                            <button
+                                onClick={handleProceed}
+                                className="text-lg text-black border-b border-black"
+                            >
+                                Proceed to the next step.
+                            </button>
+                        </Link>
                     </div>
                 ) : (
                     <div
-                        className={`relative z-10 flex flex-col items-center transition-opacity duration-300 ${
+                        className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center transition-opacity duration-300 ${
                             isTransitioning ? 'opacity-0' : 'opacity-100'
                         }`}
                     >
@@ -235,24 +236,16 @@ const Testing = () => {
                         </button>
                     </div>
                 )}
-                <img
-                    alt="Diamond Large"
-                    loading="lazy"
-                    className="absolute top-1/2 left-1/2 -translate-x-[50%] -translate-y-1/2 w-[762px] h-[762px] max-w-[480px] max-h-[480px] md:max-w-[762px] md:max-h-[762px] animate-spin-slow rotate-190 z-[1]"
-                    src="/Rectangle%202780.png"
-                />
-                <img
-                    alt="Diamond Medium"
-                    loading="lazy"
-                    className="absolute top-1/2 left-1/2 -translate-x-[50%] -translate-y-1/2 w-[682px] h-[682px] max-w-[400px] max-h-[400px] md:max-w-[682px] md:max-h-[682px] animate-spin-slower rotate-185 z-[2]"
-                    src="/Rectangle%202779.png"
-                />
-                <img
-                    alt="Diamond Small"
-                    loading="lazy"
-                    className="absolute top-1/2 left-1/2 w-[602px] h-[602px] max-w-[340px] max-h-[340px] -translate-x-[50%] -translate-y-1/2 md:max-w-[602px] md:max-h-[602px] animate-spin-slowest"
-                    src="/Rectangle%202778.jpg"
-                />
+                <div className="w-[270px] h-[270px] md:w-[482px] md:h-[482px]"></div>
+                <div
+                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[270px] h-[270px] md:w-[482px] md:h-[482px] animate-spin-slow rotate-45 rotate-200 border-dotted border-2 border-black opacity-30"
+                ></div>
+                <div
+                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[230px] h-[230px] md:w-[444.34px] md:h-[444.34px] animate-spin-slower rotate-45 rotate-190 border-dotted border-2 border-black opacity-20"
+                ></div>
+                <div
+                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[190px] h-[190px] md:w-[405.18px] md:h-[405.18px] animate-spin-slowest rotate-45 border-dotted border-2 border-black opacity-10"
+                ></div>
             </div>
             <div className="absolute bottom-8 w-full flex justify-between md:px-9 px-13 opacity-100">
                 <a className="inset-0" aria-label="Back" href="/">
