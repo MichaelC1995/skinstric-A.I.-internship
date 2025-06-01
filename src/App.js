@@ -3,6 +3,7 @@ import Home from "./pages/Home";
 import Navbar from "./components/Navbar";
 import Testing from "./pages/Testing";
 import Result from "./pages/Result";
+import Select from "./pages/Select";
 
 function App() {
     return (
@@ -12,6 +13,7 @@ function App() {
                 <Route path='/' element={<Home/>}/>
                 <Route path='/testing' element={<Testing/>}/>
                 <Route path='/result' element={<Result/>}/>
+                <Route path='/select' element={<Select/>}/>
             </Routes>
         </Router>
     );

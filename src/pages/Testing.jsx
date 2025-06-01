@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
 const Testing = () => {
@@ -12,10 +12,15 @@ const Testing = () => {
     const [nameError, setNameError] = useState('');
     const [locationError, setLocationError] = useState('');
 
+    const cityInputRef = useRef(null);
+
     useEffect(() => {
         console.log('Current step after state update:', step);
         console.log(`Rendering Step ${step}: ${step === 1 ? 'Name form' : step === 2 ? 'City form' : step === 3 ? 'Confirmation' : 'Fallback'}`);
-    }, [step]);
+        if (step === 2 && !isTransitioning && !isSubmitting && cityInputRef.current) {
+            cityInputRef.current.focus();
+        }
+    }, [step, isTransitioning, isSubmitting]);
 
     const handleTransition = useCallback((nextStep) => {
         setIsTransitioning(true);
@@ -73,8 +78,8 @@ const Testing = () => {
 
             setLocationError('');
             setIsSubmitting(true);
-            setCityPrompt('Processing Submission');
-            setCityPlaceholder('...');
+            setCityPrompt('Where are you from?');
+            setCityPlaceholder('City Name');
             setFormData((prev) => ({ ...prev, location: '' }));
 
             const payload = { name: formData.name, location: location };
@@ -141,25 +146,27 @@ const Testing = () => {
     }, [handleTransition]);
 
     return (
-        <div className="h-screen w-full flex flex-col items-center justify-center bg-white text-center overflow-hidden">
-            <div className="absolute top-16 left-9 text-left">
-                <p className="font-semibold text-xs">TO START ANALYSIS</p>
+        <div className="h-screen w-full flex flex-col items-center justify-center bg-white text-center overflow-hidden px-4 pt-20 pb-20">
+            <div className="absolute top-16 left-4 sm:left-9 text-left">
+                <p className="font-semibold text-[10px] sm:text-xs">TO START ANALYSIS</p>
             </div>
-            <div className="relative flex flex-col items-center justify-center w-full h-full overflow-hidden">
+            <div
+                className="relative flex flex-col items-center justify-center w-full h-full overflow-hidden"
+            >
                 {step === 1 ? (
                     <form
-                        key="name-form"
+                        key="step-1"
                         onSubmit={handleNameSubmit}
-                        className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 transition-opacity duration-300 ${
-                            isTransitioning ? 'opacity-0' : 'opacity-100'
+                        className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 transition-opacity duration-300 ${
+                            isTransitioning ? 'opacity-0' : 'opacity-100 animate-fade-in'
                         }`}
                     >
-                        <div className="flex flex-col items-center opacity-100">
-                            <p className="text-sm text-gray-400 tracking-wider uppercase mb-1 pointer-events-none">
+                        <div className="flex flex-col items-center opacity-100 max-w-[200px]">
+                            <p className="text-[10px] sm:text-xs text-gray-400 tracking-wider uppercase mb-1 pointer-events-none">
                                 CLICK TO TYPE
                             </p>
                             <input
-                                className="text-5xl sm:text-6xl font-normal text-center bg-transparent border-b border-black focus:outline-none appearance-none w-[372px] sm:w-[432px] pt-1 tracking-[-0.07em] leading-[64px] text-[#1A1B1C] z-10"
+                                className="text-2xl sm:text-3xl font-normal text-center bg-transparent border-b border-black focus:outline-none appearance-none w-[60vw] max-w-[200px] min-w-[160px] pt-1 tracking-[-0.05em] leading-[36px] sm:leading-[40px] text-[#1A1B1C] z-20"
                                 placeholder="Introduce Yourself"
                                 autoComplete="off"
                                 type="text"
@@ -167,53 +174,70 @@ const Testing = () => {
                                 onFocus={() => setNameError('')}
                             />
                             {nameError && (
-                                <p className="text-red-500 text-sm mt-2">{nameError}</p>
+                                <p className="text-red-500 text-[10px] sm:text-xs mt-2">{nameError}</p>
                             )}
                             <button type="submit" className="sr-only">Submit</button>
                         </div>
                     </form>
                 ) : step === 2 ? (
                     <form
-                        key="city-form"
+                        key="step-2"
                         onSubmit={handleLocationSubmit}
-                        className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 transition-opacity duration-300 ${
-                            isTransitioning ? 'opacity-0' : 'opacity-100'
+                        className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 transition-opacity duration-300 ${
+                            isTransitioning ? 'opacity-0' : 'opacity-100 animate-fade-in'
                         }`}
                     >
-                        <div className="flex flex-col items-center opacity-100">
-                            <p className="text-sm text-gray-400 tracking-wider uppercase mb-1 pointer-events-none">
-                                {cityPrompt}
-                            </p>
-                            <input
-                                className="text-5xl sm:text-6xl font-normal text-center bg-transparent border-b border-black focus:outline-none appearance-none w-[400px] sm:w-[550px] mt-4 pt-1 tracking-[-0.05em] leading-[48px] text-[#1A1B1C] z-10"
-                                placeholder={cityPlaceholder}
-                                autoComplete="off"
-                                type="text"
-                                name="location"
-                                value={formData.location}
-                                onChange={handleLocationChange}
-                                onFocus={handleCityFocus}
-                                disabled={isSubmitting}
-                            />
-                            {locationError && (
-                                <p className="text-red-500 text-sm mt-2">{locationError}</p>
+                        <div className="flex flex-col items-center opacity-100 max-w-[200px]">
+                            {isSubmitting ? (
+                                <>
+                                    <p className="text-[12px] sm:text-sm font-semibold text-center">
+                                        Processing Submission
+                                    </p>
+                                    <div className="flex space-x-2 mt-2">
+                                        <span className="text-xl sm:text-2xl font-bold animate-pulse-dot">.</span>
+                                        <span className="text-xl sm:text-2xl font-bold animate-pulse-dot delay-100">.</span>
+                                        <span className="text-xl sm:text-2xl font-bold animate-pulse-dot delay-200">.</span>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <p className="text-[10px] sm:text-xs text-gray-400 tracking-wider uppercase mb-1 pointer-events-none">
+                                        {cityPrompt}
+                                    </p>
+                                    <input
+                                        ref={cityInputRef}
+                                        className="text-2xl sm:text-3xl font-normal text-center bg-transparent border-b border-black focus:outline-none appearance-none w-[60vw] max-w-[200px] min-w-[160px] mt-2 pt-1 tracking-[-0.05em] leading-[36px] sm:leading-[40px] text-[#1A1B1C] z-20"
+                                        placeholder={cityPlaceholder}
+                                        autoComplete="off"
+                                        type="text"
+                                        name="location"
+                                        value={formData.location}
+                                        onChange={handleLocationChange}
+                                        onFocus={handleCityFocus}
+                                        disabled={isSubmitting}
+                                    />
+                                    {locationError && (
+                                        <p className="text-red-500 text-[10px] sm:text-xs mt-2">{locationError}</p>
+                                    )}
+                                </>
                             )}
                             <button type="submit" className="sr-only">Submit</button>
                         </div>
                     </form>
                 ) : step === 3 ? (
                     <div
-                        className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center transition-opacity duration-300 ${
-                            isTransitioning ? 'opacity-0' : 'opacity-100'
+                        key="step-3"
+                        className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center transition-opacity duration-300 ${
+                            isTransitioning ? 'opacity-0' : 'opacity-100 animate-fade-in'
                         }`}
                     >
-                        <p className="text-sm text-gray-400 tracking-wider uppercase mb-1 pointer-events-none">
+                        <p className="text-[10px] sm:text-xs text-gray-400 tracking-wider uppercase mb-1 pointer-events-none">
                             Thank you!
                         </p>
-                        <Link to={"/result"}>
+                        <Link to="/result">
                             <button
                                 onClick={handleProceed}
-                                className="text-lg text-black border-b border-black"
+                                className="text-sm sm:text-base text-black border-b border-black"
                             >
                                 Proceed to the next step.
                             </button>
@@ -221,42 +245,63 @@ const Testing = () => {
                     </div>
                 ) : (
                     <div
-                        className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center transition-opacity duration-300 ${
-                            isTransitioning ? 'opacity-0' : 'opacity-100'
+                        key="step-4"
+                        className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center transition-opacity duration-300 ${
+                            isTransitioning ? 'opacity-0' : 'opacity-100 animate-fade-in'
                         }`}
                     >
-                        <p className="text-sm text-gray-400 tracking-wider uppercase mb-1 pointer-events-none">
+                        <p className="text-[10px] sm:text-xs text-gray-400 tracking-wider uppercase mb-1 pointer-events-none">
                             Something went wrong. Please try again.
                         </p>
                         <button
                             onClick={handleProceed}
-                            className="text-lg text-black border-b border-black"
+                            className="text-sm sm:text-base text-black border-b border-black"
                         >
                             Restart
                         </button>
                     </div>
                 )}
-                <div className="w-[270px] h-[270px] md:w-[482px] md:h-[482px]"></div>
-                <div
-                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[270px] h-[270px] md:w-[482px] md:h-[482px] animate-spin-slow rotate-45 rotate-200 border-dotted border-2 border-black opacity-30"
-                ></div>
-                <div
-                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[230px] h-[230px] md:w-[444.34px] md:h-[444.34px] animate-spin-slower rotate-45 rotate-190 border-dotted border-2 border-black opacity-20"
-                ></div>
-                <div
-                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[190px] h-[190px] md:w-[405.18px] md:h-[405.18px] animate-spin-slowest rotate-45 border-dotted border-2 border-black opacity-10"
-                ></div>
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div
+                        className="absolute w-[70vw] h-[70vw] max-w-[300px] max-h-[300px] border-dotted border-2 border-black opacity-15 transition-opacity duration-300 rotate-45"
+                        style={{
+                            left: '50%',
+                            top: '50%',
+                            transform: 'translate(-50%, -50%) rotate(45deg)',
+                        }}
+                    ></div>
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div
+                        className="absolute w-[80vw] h-[80vw] max-w-[350px] max-h-[350px] border-dotted border-2 border-black opacity-10 transition-opacity duration-300 rotate-45"
+                        style={{
+                            left: '50%',
+                            top: '50%',
+                            transform: 'translate(-50%, -50%) rotate(45deg)',
+                        }}
+                    ></div>
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div
+                        className="absolute w-[90vw] h-[90vw] max-w-[400px] max-h-[400px] border-dotted border-2 border-black opacity-5 transition-opacity duration-300 rotate-45"
+                        style={{
+                            left: '50%',
+                            top: '50%',
+                            transform: 'translate(-50%, -50%) rotate(45deg)',
+                        }}
+                    ></div>
+                </div>
             </div>
-            <div className="absolute bottom-8 w-full flex justify-between md:px-9 px-13 opacity-100">
+            <div className="absolute bottom-12 sm:bottom-8 w-full flex justify-between px-4 sm:px-9 opacity-100">
                 <a className="inset-0" aria-label="Back" href="/">
                     <div>
                         <div className="group flex flex-row relative justify-center items-center">
                             <div
-                                className="w-20 h-20 flex justify-center rotate-45 scale-[1.0] group-hover:scale-[1.1] ease duration-300"
+                                className="w-16 sm:w-20 h-16 sm:h-20 flex justify-center rotate-45 scale-[1.0] group-hover:scale-[1.1] ease duration-300"
                             ></div>
                             <img
                                 src="/back-icon-text-shrunk.jpg"
-                                className="absolute left-[20px] bottom-[18px] scale-[1.1] group-hover:scale-[1.2] ease duration-300"
+                                className="absolute left-[16px] sm:left-[20px] bottom-[14px] sm:bottom-[18px] scale-100 sm:scale-[1.1] group-hover:scale-110 sm:group-hover:scale-[1.2] ease duration-300"
                             />
                         </div>
                     </div>
@@ -267,10 +312,10 @@ const Testing = () => {
                             <div className="group flex flex-row relative justify-center items-center">
                                 <img
                                     src="/proceed-icon.jpg"
-                                    className="absolute right-[20px] bottom-[18px] scale-[1.35] group-hover:scale-[1.45] ease duration-300"
+                                    className="absolute right-[16px] sm:right-[20px] bottom-[14px] sm:bottom-[18px] scale-125 sm:scale-[1.35] group-hover:scale-[1.35] sm:group-hover:scale-[1.45] ease duration-300"
                                 />
                                 <div
-                                    className="w-20 h-20 flex justify-center rotate-45 scale-[1.1] group-hover:scale-[1.2] ease duration-300"
+                                    className="w-16 sm:w-20 h-16 sm:h-20 flex justify-center rotate-45 scale-[1.0] sm:scale-[1.1] group-hover:scale-[1.1] sm:group-hover:scale-[1.2] ease duration-300"
                                 ></div>
                             </div>
                         </div>

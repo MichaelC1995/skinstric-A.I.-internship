@@ -1,14 +1,16 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
+import {useNavigate} from 'react-router-dom';
 
 const Result = () => {
     const [previewImage, setPreviewImage] = useState(null);
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
+    const navigate = useNavigate();
 
     const handleFileChange = (event) => {
         const file = event.target.files[0];
         if (file) {
-
             if (!file.type.startsWith('image/')) {
                 setError('Please select an image file.');
                 return;
@@ -30,6 +32,7 @@ const Result = () => {
     const uploadImage = async (base64String) => {
         setIsLoading(true);
         setError(null);
+        setIsSuccess(false);
 
         try {
             const response = await fetch('https://us-central1-api-skinstric-ai.cloudfunctions.net/skinstricPhaseTwo', {
@@ -48,6 +51,7 @@ const Result = () => {
 
             const result = await response.json();
             console.log('API Response:', result);
+            setIsSuccess(true);
         } catch (err) {
             setError(err.message);
         } finally {
@@ -55,25 +59,52 @@ const Result = () => {
         }
     };
 
+    useEffect(() => {
+        if (isSuccess) {
+            alert('Image successfully analyzed!');
+            setIsSuccess(false);
+            navigate('/select');
+        }
+    }, [isSuccess, navigate]);
+
     return (
-        <div className="min-h-[92vh] flex flex-col bg-white relative md:pt-[64px] justify-center">
-            <div className="absolute top-2 left-9 md:left-8 text-left">
-                <p className="font-semibold text-xs md:text-sm">TO START ANALYSIS</p>
+        <div
+            className="h-screen w-full flex flex-col items-center justify-center bg-white text-center overflow-hidden px-4 pt-20 pb-20">
+            {/* Navbar */}
+            <div className="absolute top-2 left-4 sm:left-9 text-left z-10">
+                <p className="font-semibold text-[10px] sm:text-xs">TO START ANALYSIS</p>
             </div>
+            {/* Main Content */}
             <div
-                className="flex-[0.4] justify-center md:flex-1 flex flex-col md:flex-row items-center xl:justify-center relative mb-0 md:mb-30 space-y-[100px] md:gap-x-[150px] md:space-y-0">
-                <div className="flex flex-col items-center justify-center relative">
-                    <div className="w-[270px] h-[270px] md:w-[290px] md:h-[290px]"></div>
-                    <div
-                        className="absolute z-10 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[175px] h-[175px] md:w-[290px] md:h-[290px] animate-spin-slow rotate-45 rotate-200 border-dotted border-2 border-black opacity-10"
-                    ></div>
-                    <div
-                        className="absolute z-10 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[147px] h-[147px] md:w-[267px] md:h-[267px] animate-spin-slower rotate-45 rotate-190 border-dotted border-2 border-black opacity-10"
-                    ></div>
-                    <div
-                        className="absolute z-10 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[118px] h-[118px] md:w-[243px] md:h-[243px] animate-spin-slowest rotate-45 border-dotted border-2 border-black opacity-10"
-                    ></div>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                className="w-full h-full flex flex-col md:flex-row items-center justify-center space-y-[100px] md:space-y-0 gap-y-[10px] md:gap-x-[150px]">
+                {/* Camera Section */}
+                <div
+                    className="relative w-[270px] h-[270px] md:w-[290px] md:h-[290px] flex flex-col items-center justify-center">
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div
+                            className="absolute w-[70vw] h-[70vw] max-w-[260px] max-h-[260px] border-dotted border-2 border-black opacity-5 transition-opacity duration-300 rotate-45"
+                            style={{left: '50%', top: '50%', transform: 'translate(-50%, -50%) rotate(45deg)'}}
+                        ></div>
+                    </div>
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div
+                            className="absolute w-[55vw] h-[55vw] max-w-[230px] max-h-[230px] border-dotted border-2 border-black opacity-10 transition-opacity duration-300 rotate-45"
+                            style={{left: '50%', top: '50%', transform: 'translate(-50%, -50%) rotate(45deg)'}}
+                        ></div>
+                    </div>
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div
+                            className="absolute w-[40vw] h-[40vw] max-w-[200px] max-h-[200px] border-dotted border-2 border-black opacity-15 transition-opacity duration-300 rotate-45"
+                            style={{left: '50%', top: '50%', transform: 'translate(-50%, -50%) rotate(45deg)'}}
+                        ></div>
+                    </div>
+                    <div className="absolute top-0 right-0 p-4">
+                        <p className="text-[12px] text-right md:text-[14px] font-normal leading-[20px] min-w-[120px]">
+                            ALLOW A.I.<br/>TO SCAN YOUR FACE
+                        </p>
+                    </div>
+                    <div className="absolute top-[60px] right-[75px] w-[2px] h-[60px] bg-black rotate-[35deg] origin-top z-50" />
+                    <div className="relative flex flex-col items-center justify-center z-20">
                         <img
                             alt="Camera Icon"
                             loading="lazy"
@@ -81,37 +112,40 @@ const Result = () => {
                             height="136"
                             decoding="async"
                             data-nimg="1"
-                            className="absolute w-[90px] h-[90px] md:w-[110px] md:h-[110px] hover:scale-108 duration-700 ease-in-out cursor-pointer"
+                            className="w-[90px] h-[90px] md:w-[110px] md:h-[110px] hover:scale-108 duration-700 ease-in-out cursor-pointer"
                             src="/camera.jpg"
                             style={{color: 'transparent'}}
                         />
-                        <img
-                            alt="Camera Scan"
-                            loading="lazy"
-                            src="/Vector%201.jpg"
-                            className="z-0 hidden md:block absolute w-[60px] md:w-[80px] top-1/2 left-1/2 translate-x-[55px] -translate-y-[93px] rotate-[15deg]"
-                        />
-                        <div
-                            className="absolute top-1/2 left-1/2 translate-x-0 translate-y-[70px] md:translate-x-[150px] md:-translate-y-[110px]">
-                            <p className="text-[12px] text-center md:text-left md:text-[14px] font-normal mt-2 leading-[24px]">
-                                ALLOW A.I.<br/>TO SCAN YOUR FACE
-                            </p>
-                        </div>
                     </div>
                 </div>
                 {/* Gallery Section */}
-                <div className="flex flex-col items-center justify-center relative mt-12 md:mt-0">
-                    <div className="w-[270px] h-[270px] md:w-[290px] md:h-[290px]"></div>
-                    <div
-                        className="absolute z-10 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[175px] h-[175px] md:w-[290px] md:h-[290px] animate-spin-slow rotate-45 rotate-205 border-dotted border-2 border-black opacity-10"
-                    ></div>
-                    <div
-                        className="absolute z-10 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[147px] h-[147px] md:w-[267px] md:h-[267px] animate-spin-slower rotate-45 rotate-195 border-dotted border-2 border-black opacity-10"
-                    ></div>
-                    <div
-                        className="absolute z-10 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[118px] h-[118px] md:w-[243px] md:h-[243px] animate-spin-slowest rotate-45 border-dotted border-2 border-black opacity-10"
-                    ></div>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <div
+                    className="relative w-[270px] h-[270px] md:w-[290px] md:h-[290px] flex flex-col items-center justify-center">
+                    <div className="absolute bottom-2 left-2 md:bottom-4 md:left-4 z-20">
+                        <p className="text-[12px] text-left md:text-[14px] font-normal leading-[20px] min-w-[120px]">
+                            ALLOW A.I.<br/>ACCESS GALLERY
+                        </p>
+                    </div>
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div
+                            className="absolute w-[70vw] h-[70vw] max-w-[260px] max-h-[260px] border-dotted border-2 border-black opacity-5 transition-opacity duration-300 rotate-45"
+                            style={{left: '50%', top: '50%', transform: 'translate(-50%, -50%) rotate(45deg)'}}
+                        ></div>
+                    </div>
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div
+                            className="absolute w-[55vw] h-[55vw] max-w-[230px] max-h-[230px] border-dotted border-2 border-black opacity-10 transition-opacity duration-300 rotate-45"
+                            style={{left: '50%', top: '50%', transform: 'translate(-50%, -50%) rotate(45deg)'}}
+                        ></div>
+                    </div>
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div
+                            className="absolute w-[40vw] h-[40vw] max-w-[200px] max-h-[200px] border-dotted border-2 border-black opacity-15 transition-opacity duration-300 rotate-45"
+                            style={{left: '50%', top: '50%', transform: 'translate(-50%, -50%) rotate(45deg)'}}
+                        ></div>
+                    </div>
+                    <div className="relative flex flex-col items-center justify-center z-10">
+                        <div className="absolute top-[90px] right-[90px] w-[2px] h-[60px] bg-black rotate-[35deg] origin-top z-50" />
                         <img
                             alt="Photo Upload Icon"
                             loading="lazy"
@@ -119,7 +153,7 @@ const Result = () => {
                             height="136"
                             decoding="async"
                             data-nimg="1"
-                            className="absolute z-20 w-[90px] h-[90px] md:w-[110px] md:h-[110px] hover:scale-108 duration-700 ease-in-out cursor-pointer"
+                            className="w-[90px] h-[90px] md:w-[110px] md:h-[110px] hover:scale-108 duration-700 ease-in-out cursor-pointer"
                             src="/gallery.jpg"
                             style={{color: 'transparent'}}
                             onClick={() => {
@@ -132,11 +166,6 @@ const Result = () => {
                                 }
                             }}
                         />
-                        <div className="absolute top-[75%] md:top-[70%] md:left-[17px] translate-y-[-10px]">
-                            <p className="text-[12px] md:text-[14px] font-normal mt-2 leading-[24px] text-right">
-                                ALLOW A.I.<br/>ACCESS GALLERY
-                            </p>
-                        </div>
                     </div>
                 </div>
                 <input
@@ -147,44 +176,78 @@ const Result = () => {
                     onChange={handleFileChange}
                 />
             </div>
-            <div className="pt-4 md:pt-0 pb-8 bg-white sticky md:static bottom-30.5 mb-0 md:mb-0">
-                <div className="absolute bottom-8 w-full flex justify-between md:px-9 px-13">
-                    <a className="relative" aria-label="Back" href="/testing">
+            {/* Navigation */}
+            <div className="absolute bottom-8 w-full flex justify-between px-4 sm:px-9 z-10">
+                <a className="relative" aria-label="Back" href="/testing">
+                    <div>
+                        <div
+                            className="relative w-12 h-12 flex items-center justify-center border border-[#1A1B1C] rotate-45 scale-[1] sm:hidden">
+                            <span className="rotate-[-45deg] text-xs font-semibold sm:hidden">BACK</span>
+                        </div>
+                        <div className="group hidden sm:flex flex-row relative justify-center items-center">
+                            <div
+                                className="w-12 h-12 hidden sm:flex justify-center border border-[#1A1B1C] rotate-45 scale-[0.85] group-hover:scale-[0.92] ease duration-300"></div>
+                            <span
+                                className="absolute left-[15px] bottom-[13px] scale-[0.9] rotate-180 hidden sm:block group-hover:scale-[0.92] ease duration-300">▶</span>
+                            <span className="text-sm font-semibold hidden sm:block ml-6">BACK</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="/select">
+                    <div className="hidden">
                         <div>
                             <div
-                                className="relative w-12 h-12 flex items-center justify-center border border-[#1A1B1C] rotate-45 scale-[1] sm:hidden">
-                                <span className="rotate-[-45deg] text-xs font-semibold sm:hidden">BACK</span>
+                                className="w-12 h-12 flex items-center justify-center border border-[#1A1B1C] rotate-45 scale-[1] sm:hidden">
+                                <span className="rotate-[-45deg] text-xs font-semibold sm:hidden">PROCEED</span>
                             </div>
                             <div className="group hidden sm:flex flex-row relative justify-center items-center">
+                                <span className="text-sm font-semibold hidden sm:block mr-5">PROCEED</span>
                                 <div
                                     className="w-12 h-12 hidden sm:flex justify-center border border-[#1A1B1C] rotate-45 scale-[0.85] group-hover:scale-[0.92] ease duration-300"></div>
                                 <span
-                                    className="absolute left-[15px] bottom-[13px] scale-[0.9] rotate-180 hidden sm:block group-hover:scale-[0.92] ease duration-300">▶</span>
-                                <span className="text-sm font-semibold hidden sm:block ml-6">BACK</span>
+                                    className="absolute right-[15px] bottom-[13px] scale-[0.9] hidden sm:block group-hover:scale-[0.92] ease duration-300">▶</span>
                             </div>
                         </div>
-                    </a>
-                    <a href="/select">
-                        <div className="hidden">
-                            <div>
-                                <div
-                                    className="w-12 h-12 flex items-center justify-center border border-[#1A1B1C] rotate-45 scale-[1] sm:hidden">
-                                    <span className="rotate-[-45deg] text-xs font-semibold sm:hidden">PROCEED</span>
-                                </div>
-                                <div className="group hidden sm:flex flex-row relative justify-center items-center">
-                                    <span className="text-sm font-semibold hidden sm:block mr-5">PROCEED</span>
-                                    <div
-                                        className="w-12 h-12 hidden sm:flex justify-center border border-[#1A1B1C] rotate-45 scale-[0.85] group-hover:scale-[0.92] ease duration-300"></div>
-                                    <span
-                                        className="absolute right-[15px] bottom-[13px] scale-[0.9] hidden sm:block group-hover:scale-[0.92] ease duration-300">▶</span>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
+                    </div>
+                </a>
             </div>
-            {isLoading && <p>Loading...</p>}
-            {error && <p className="text-red-500">{error}</p>}
+            {/* Loading Overlay */}
+            {isLoading && (
+                <div className="fixed inset-0 bg-white flex flex-col items-center justify-center z-50 animate-fade-in"
+                     aria-live="polite" role="alert">
+                    <div className="relative w-[270px] h-[270px] md:w-[290px] md:h-[290px]">
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div
+                                className="absolute w-[70vw] h-[70vw] max-w-[300px] max-h-[300px] border-dotted border-2 border-black opacity-5 transition-opacity duration-300 rotate-45"
+                                style={{left: '50%', top: '50%', transform: 'translate(-50%, -50%) rotate(45deg)'}}
+                            ></div>
+                        </div>
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div
+                                className="absolute w-[55vw] h-[55vw] max-w-[270px] max-h-[270px] border-dotted border-2 border-black opacity-10 transition-opacity duration-300 rotate-45"
+                                style={{left: '50%', top: '50%', transform: 'translate(-50%, -50%) rotate(45deg)'}}
+                            ></div>
+                        </div>
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div
+                                className="absolute w-[40vw] h-[40vw] max-w-[240px] max-h-[240px] border-dotted border-2 border-black opacity-15 transition-opacity duration-300 rotate-45"
+                                style={{left: '50%', top: '50%', transform: 'translate(-50%, -50%) rotate(45deg)'}}
+                            ></div>
+                        </div>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
+                            <p className="text-[16px] md:text-[18px] font-semibold text-center">Preparing your
+                                analysis</p>
+                            <div className="flex space-x-1 justify-center items-center mt-2">
+                                <span className="text-3xl font-bold animate-dot-bounce-1">.</span>
+                                <span className="text-3xl font-bold animate-dot-bounce-2">.</span>
+                                <span className="text-3xl font-bold animate-dot-bounce-3">.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Error Message */}
+            {error && <p className="text-red-500 text-center mt-4">{error}</p>}
         </div>
     );
 };
