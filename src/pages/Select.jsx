@@ -1,6 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { FaArrowRight, FaArrowLeft } from 'react-icons/fa';
+import { Link } from 'react-router-dom'; // Added for consistency
+import { useAnalysis } from '../context/AnalysisContext';
 
 const Select = () => {
+    const { analysisResult } = useAnalysis();
+
+    useEffect(() => {
+        if (!analysisResult) {
+        } else {
+            console.log('Analysis result in select page:', analysisResult);
+        }
+    }, [analysisResult]);
+
     return (
         <div>
             <div className="absolute top-10 left-8 text-left mt-5">
@@ -43,13 +55,13 @@ const Select = () => {
                     </div>
                     <div className="relative z-10 grid grid-cols-3 grid-rows-3 gap-0">
                         <div className="flex items-center justify-center col-start-2">
-                            <a href="/summary">
+                            <Link to="/summary">
                                 <button
                                     className="w-[153.88px] h-[153.88px] bg-gray-200 hover:bg-gray-300 transform rotate-45 flex items-center justify-center -m-5 cursor-pointer font-semibold leading-[24px] tracking-tight uppercase hover:scale-[1.05] transition-transform duration-300"
                                 >
                                     <span className="transform -rotate-45">Demographics</span>
                                 </button>
-                            </a>
+                            </Link>
                         </div>
                         <div className="flex items-center justify-center row-start-2 col-start-1">
                             <button
@@ -75,48 +87,38 @@ const Select = () => {
                     </div>
                 </div>
             </div>
-            <div className="pt-4 md:pt-12 pb-8 bg-white sticky md:static bottom-40 mb-0 md:mb-0">
-                <div className="flex justify-between max-w-full mx-auto px-13 md:px-9">
-                    <a href="/result">
-                        <div>
-                            <div
-                                className="relative w-12 h-12 flex items-center justify-center border border-[#1A1B1C] rotate-45 scale-[1] sm:hidden"
-                            >
-                                <span className="rotate-[-45deg] text-xs font-semibold sm:hidden">BACK</span>
+            <div className="pt-4 md:pt-[37px] pb-6 bg-white sticky bottom-40 md:static md:bottom-0 mb-8 md:mb-16 md:flex-shrink-0">
+                <div className="w-full max-w-screen mx-auto px-4 md:px-4">
+                    <div className="flex justify-between">
+                        <Link to="/result">
+                            <div>
+                                <div className="relative w-12 h-12 flex items-center justify-center border border-[#1A1B1C] rotate-45 scale-[1] sm:hidden">
+                                    <span className="rotate-[-45deg] text-xs font-semibold sm:hidden">BACK</span>
+                                </div>
+                                <div className="group hidden sm:flex flex-row relative justify-center items-center">
+                                    <div className="w-12 h-12 hidden sm:flex justify-center border border-[#1A1B1C] rotate-45 scale-[0.85] group-hover:scale-[0.92] ease duration-300"></div>
+                                    <FaArrowLeft
+                                        className="absolute left-[16px] bottom-[15px] scale-[0.9] hidden sm:block group-hover:scale-[0.92] ease duration-300"
+                                    />
+                                    <span className="text-sm font-semibold hidden sm:block ml-4">BACK</span>
+                                </div>
                             </div>
-                            <div className="group hidden sm:flex flex-row relative justify-center items-center">
-                                <div
-                                    className="w-12 h-12 hidden sm:flex justify-center border border-[#1A1B1C] rotate-45 scale-[0.85] group-hover:scale-[0.92] ease duration-300"
-                                ></div>
-                                <span
-                                    className="absolute left-[15px] bottom-[13px] scale-[0.9] rotate-180 hidden sm:block group-hover:scale-[0.92] ease duration-300"
-                                >
-                  ▶
-                </span>
-                                <span className="text-sm font-semibold hidden sm:block ml-6">BACK</span>
+                        </Link>
+                        <Link to="/summary">
+                            <div>
+                                <div className="w-12 h-12 flex items-center justify-center border border-[#1A1B1C] rotate-45 scale-[1] sm:hidden">
+                                    <span className="rotate-[-45deg] text-xs font-semibold sm:hidden">SUM</span>
+                                </div>
+                                <div className="group hidden sm:flex flex-row relative justify-center items-center">
+                                    <span className="text-sm font-semibold hidden sm:block mr-4">GET SUMMARY</span>
+                                    <div className="w-12 h-12 hidden sm:flex justify-center border border-[#1A1B1C] rotate-45 scale-[0.85] group-hover:scale-[0.92] ease duration-300"></div>
+                                    <FaArrowRight
+                                        className="absolute right-[16px] bottom-[15px] scale-[0.9] hidden sm:block group-hover:scale-[0.92] ease duration-300"
+                                    />
+                                </div>
                             </div>
-                        </div>
-                    </a>
-                    <a href="/summary">
-                        <div>
-                            <div
-                                className="w-12 h-12 flex items-center justify-center border border-[#1A1B1C] rotate-45 scale-[1] sm:hidden"
-                            >
-                                <span className="rotate-[-45deg] text-xs font-semibold sm:hidden">SUM</span>
-                            </div>
-                            <div className="group hidden sm:flex flex-row relative justify-center items-center">
-                                <span className="text-sm font-semibold hidden sm:block mr-5">GET SUMMARY</span>
-                                <div
-                                    className="w-12 h-12 hidden sm:flex justify-center border border-[#1A1B1C] rotate-45 scale-[0.85] group-hover:scale-[0.92] ease duration-300"
-                                ></div>
-                                <span
-                                    className="absolute right-[15px] bottom-[13px] scale-[0.9] hidden sm:block group-hover:scale-[0.92] ease duration-300"
-                                >
-                  ▶
-                </span>
-                            </div>
-                        </div>
-                    </a>
+                        </Link>
+                    </div>
                 </div>
             </div>
         </div>

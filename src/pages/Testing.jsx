@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 
 const Testing = () => {
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({ name: '', location: '' });
     const [isTransitioning, setIsTransitioning] = useState(false);
-    const [cityPrompt, setCityPrompt] = useState('Click to type');
-    const [cityPlaceholder, setCityPlaceholder] = useState('Where are you from?');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isApiSuccess, setIsApiSuccess] = useState(false);
     const [nameError, setNameError] = useState('');
@@ -15,8 +14,6 @@ const Testing = () => {
     const cityInputRef = useRef(null);
 
     useEffect(() => {
-        console.log('Current step after state update:', step);
-        console.log(`Rendering Step ${step}: ${step === 1 ? 'Name form' : step === 2 ? 'City form' : step === 3 ? 'Confirmation' : 'Fallback'}`);
         if (step === 2 && !isTransitioning && !isSubmitting && cityInputRef.current) {
             cityInputRef.current.focus();
         }
@@ -46,7 +43,6 @@ const Testing = () => {
             event.preventDefault();
             const formData = new FormData(event.target);
             const submittedName = formData.get('name');
-            console.log('Name form submitted, name:', submittedName);
 
             const nameValidationError = validateString(submittedName, 'Name');
             if (nameValidationError) {
@@ -67,7 +63,6 @@ const Testing = () => {
             event.preventDefault();
             const formDataFromEvent = new FormData(event.target);
             const location = formDataFromEvent.get('location');
-            console.log('City form submitted, location:', location);
 
             const locationValidationError = validateString(location, 'City');
             if (locationValidationError) {
@@ -78,41 +73,32 @@ const Testing = () => {
 
             setLocationError('');
             setIsSubmitting(true);
-            setCityPrompt('Where are you from?');
-            setCityPlaceholder('City Name');
             setFormData((prev) => ({ ...prev, location: '' }));
 
-            const payload = { name: formData.name, location: location };
-            console.log('Sending API request with:', payload);
-            try {
-                const response = await fetch('https://us-central1-api-skinstric-ai.cloudfunctions.net/skinstricPhaseOne', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(payload),
-                });
+            const payload = { name: formData.name, location };
 
-                console.log('API response status:', response.status);
+            try {
+                const response = await fetch(
+                    'https://us-central1-api-skinstric-ai.cloudfunctions.net/skinstricPhaseOne',
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(payload),
+                    }
+                );
+
                 if (!response.ok) {
                     const errorText = await response.text();
                     throw new Error(`API request failed: ${response.status} - ${errorText}`);
                 }
 
-                const text = await response.text();
-                console.log('Raw response:', text);
-                let result;
-                try {
-                    result = JSON.parse(text);
-                } catch (parseError) {
-                    console.error('Failed to parse API response:', parseError);
-                    result = { message: 'Response received but could not parse JSON' };
-                }
-                console.log('API response:', result);
+                const result = await response.json();
                 setIsApiSuccess(true);
                 alert('Submission successful!');
             } catch (error) {
-                console.error('Error submitting form:', error);
+                console.error('❌ Error submitting form:', error);
                 alert('Failed to submit form. Please try again.');
             } finally {
                 setIsSubmitting(false);
@@ -124,8 +110,6 @@ const Testing = () => {
 
     const handleCityFocus = useCallback(() => {
         if (!isSubmitting) {
-            setCityPrompt('Where are you from?');
-            setCityPlaceholder('City Name');
             setLocationError('');
         }
     }, [isSubmitting]);
@@ -137,8 +121,6 @@ const Testing = () => {
 
     const handleProceed = useCallback(() => {
         setFormData({ name: '', location: '' });
-        setCityPrompt('Click to type');
-        setCityPlaceholder('Where are you from?');
         setIsApiSuccess(false);
         setNameError('');
         setLocationError('');
@@ -150,9 +132,7 @@ const Testing = () => {
             <div className="absolute top-16 left-4 sm:left-9 text-left">
                 <p className="font-semibold text-[10px] sm:text-xs">TO START ANALYSIS</p>
             </div>
-            <div
-                className="relative flex flex-col items-center justify-center w-full h-full overflow-hidden"
-            >
+            <div className="relative flex flex-col items-center justify-center w-full h-full overflow-hidden">
                 {step === 1 ? (
                     <form
                         key="step-1"
@@ -161,12 +141,12 @@ const Testing = () => {
                             isTransitioning ? 'opacity-0' : 'opacity-100 animate-fade-in'
                         }`}
                     >
-                        <div className="flex flex-col items-center opacity-100 max-w-[200px]">
+                        <div className="flex flex-col items-center opacity-100 max-w-[300px]">
                             <p className="text-[10px] sm:text-xs text-gray-400 tracking-wider uppercase mb-1 pointer-events-none">
                                 CLICK TO TYPE
                             </p>
                             <input
-                                className="text-2xl sm:text-3xl font-normal text-center bg-transparent border-b border-black focus:outline-none appearance-none w-[60vw] max-w-[200px] min-w-[160px] pt-1 tracking-[-0.05em] leading-[36px] sm:leading-[40px] text-[#1A1B1C] z-20"
+                                className="text-2xl sm:text-3xl font-normal text-center bg-transparent border-b border-black focus:outline-none appearance-none w-[70vw] max-w-[320px] min-w-[200px] pt-1 px-2 tracking-[-0.05em] leading-[36px] sm:leading-[50px] text-[#1A1B1C] z-20 placeholder:text-black placeholder:opacity-100 sm:placeholder:text-[32px]"
                                 placeholder="Introduce Yourself"
                                 autoComplete="off"
                                 type="text"
@@ -187,27 +167,27 @@ const Testing = () => {
                             isTransitioning ? 'opacity-0' : 'opacity-100 animate-fade-in'
                         }`}
                     >
-                        <div className="flex flex-col items-center opacity-100 max-w-[200px]">
+                        <div className="flex flex-col items-center opacity-100 max-w-[300px]">
                             {isSubmitting ? (
                                 <>
                                     <p className="text-[12px] sm:text-sm font-semibold text-center">
                                         Processing Submission
                                     </p>
                                     <div className="flex space-x-2 mt-2">
-                                        <span className="text-xl sm:text-2xl font-bold animate-pulse-dot">.</span>
-                                        <span className="text-xl sm:text-2xl font-bold animate-pulse-dot delay-100">.</span>
-                                        <span className="text-xl sm:text-2xl font-bold animate-pulse-dot delay-200">.</span>
+                                        <span className="text-xl sm:text-2xl font-bold animate-dot-bounce-1">.</span>
+                                        <span className="text-xl sm:text-2xl font-bold animate-dot-bounce-2 delay-100">.</span>
+                                        <span className="text-xl sm:text-2xl font-bold animate-dot-bounce-3 delay-200">.</span>
                                     </div>
                                 </>
                             ) : (
                                 <>
                                     <p className="text-[10px] sm:text-xs text-gray-400 tracking-wider uppercase mb-1 pointer-events-none">
-                                        {cityPrompt}
+                                        CLICK TO TYPE
                                     </p>
                                     <input
                                         ref={cityInputRef}
-                                        className="text-2xl sm:text-3xl font-normal text-center bg-transparent border-b border-black focus:outline-none appearance-none w-[60vw] max-w-[200px] min-w-[160px] mt-2 pt-1 tracking-[-0.05em] leading-[36px] sm:leading-[40px] text-[#1A1B1C] z-20"
-                                        placeholder={cityPlaceholder}
+                                        className="text-2xl sm:text-3xl font-normal text-center bg-transparent border-b border-black focus:outline-none appearance-none w-[70vw] max-w-[320px] min-w-[200px] mt-2 pt-1 px-2 tracking-[-0.05em] leading-[36px] sm:leading-[40px] text-[#1A1B1C] z-20 placeholder:text-black placeholder:opacity-100 sm:placeholder:text-[32px]"
+                                        placeholder="Where are you from?"
                                         autoComplete="off"
                                         type="text"
                                         name="location"
@@ -263,63 +243,64 @@ const Testing = () => {
                 )}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <div
-                        className="absolute w-[70vw] h-[70vw] max-w-[300px] max-h-[300px] border-dotted border-2 border-black opacity-15 transition-opacity duration-300 rotate-45"
-                        style={{
-                            left: '50%',
-                            top: '50%',
-                            transform: 'translate(-50%, -50%) rotate(45deg)',
-                        }}
+                        className={`absolute w-[70vw] h-[70vw] max-w-[300px] max-h-[300px] border-dotted border-2 border-black opacity-15 transition-opacity duration-300 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rotate-45 ${
+                            step === 2 && isSubmitting ? 'animate-spin-slow' : ''
+                        }`}
                     ></div>
                 </div>
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <div
-                        className="absolute w-[80vw] h-[80vw] max-w-[350px] max-h-[350px] border-dotted border-2 border-black opacity-10 transition-opacity duration-300 rotate-45"
-                        style={{
-                            left: '50%',
-                            top: '50%',
-                            transform: 'translate(-50%, -50%) rotate(45deg)',
-                        }}
+                        className={`absolute w-[80vw] h-[80vw] max-w-[350px] max-h-[350px] border-dotted border-2 border-black opacity-10 transition-opacity duration-300 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rotate-45 ${
+                            step === 2 && isSubmitting ? 'animate-spin-slower' : ''
+                        }`}
                     ></div>
                 </div>
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <div
-                        className="absolute w-[90vw] h-[90vw] max-w-[400px] max-h-[400px] border-dotted border-2 border-black opacity-5 transition-opacity duration-300 rotate-45"
-                        style={{
-                            left: '50%',
-                            top: '50%',
-                            transform: 'translate(-50%, -50%) rotate(45deg)',
-                        }}
+                        className={`absolute w-[90vw] h-[90vw] max-w-[400px] max-h-[400px] border-dotted border-2 border-black opacity-5 transition-opacity duration-300 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rotate-45 ${
+                            step === 2 && isSubmitting ? 'animate-spin-slowest' : ''
+                        }`}
                     ></div>
                 </div>
             </div>
             <div className="absolute bottom-12 sm:bottom-8 w-full flex justify-between px-4 sm:px-9 opacity-100">
-                <a className="inset-0" aria-label="Back" href="/">
+                <Link to="/" aria-label="Back">
                     <div>
-                        <div className="group flex flex-row relative justify-center items-center">
+                        <div
+                            className="relative w-12 h-12 flex items-center justify-center border border-[#1A1B1C] rotate-45 scale-[1] sm:hidden"
+                        >
+                            <span className="rotate-[-45deg] text-xs font-semibold sm:hidden">BACK</span>
+                        </div>
+                        <div className="group hidden sm:flex flex-row relative justify-center items-center">
                             <div
-                                className="w-16 sm:w-20 h-16 sm:h-20 flex justify-center rotate-45 scale-[1.0] group-hover:scale-[1.1] ease duration-300"
+                                className="w-12 h-12 hidden sm:flex justify-center border border-[#1A1B1C] rotate-45 scale-[0.85] group-hover:scale-[0.92] ease duration-300"
                             ></div>
-                            <img
-                                src="/back-icon-text-shrunk.jpg"
-                                className="absolute left-[16px] sm:left-[20px] bottom-[14px] sm:bottom-[18px] scale-100 sm:scale-[1.1] group-hover:scale-110 sm:group-hover:scale-[1.2] ease duration-300"
+                            <FaArrowLeft
+                                className="absolute left-[16px] bottom-[15px] scale-[0.9] hidden sm:block group-hover:scale-[0.92] ease duration-300"
                             />
+                            <span className="text-sm font-semibold hidden sm:block ml-6">BACK</span>
                         </div>
                     </div>
-                </a>
+                </Link>
                 {isApiSuccess && (
-                    <a className="inset-0" aria-label="Forward" href="/result">
+                    <Link to="/result" aria-label="Forward">
                         <div>
-                            <div className="group flex flex-row relative justify-center items-center">
-                                <img
-                                    src="/proceed-icon.jpg"
-                                    className="absolute right-[16px] sm:right-[20px] bottom-[14px] sm:bottom-[18px] scale-125 sm:scale-[1.35] group-hover:scale-[1.35] sm:group-hover:scale-[1.45] ease duration-300"
-                                />
+                            <div
+                                className="w-12 h-12 flex items-center justify-center border border-[#1A1B1C] rotate-45 scale-[1] sm:hidden"
+                            >
+                                <span className="rotate-[-45deg] text-xs font-semibold sm:hidden">PROCEED</span>
+                            </div>
+                            <div className="group hidden sm:flex flex-row relative justify-center items-center">
+                                <span className="text-sm font-semibold hidden sm:block mr-5">PROCEED</span>
                                 <div
-                                    className="w-16 sm:w-20 h-16 sm:h-20 flex justify-center rotate-45 scale-[1.0] sm:scale-[1.1] group-hover:scale-[1.1] sm:group-hover:scale-[1.2] ease duration-300"
+                                    className="w-12 h-12 hidden sm:flex justify-center border border-[#1A1B1C] rotate-45 scale-[0.85] group-hover:scale-[0.92] ease duration-300"
                                 ></div>
+                                <FaArrowRight
+                                    className="absolute right-[16px] bottom-[15px] scale-[0.9] hidden sm:block group-hover:scale-[0.92] ease duration-300"
+                                />
                             </div>
                         </div>
-                    </a>
+                    </Link>
                 )}
             </div>
         </div>
