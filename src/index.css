@@ -9,6 +9,32 @@ body {
     overflow: hidden;
 }
 
+.border-size-0 {
+    max-width: 183px;
+    max-height: 183px;
+}
+.border-size-1 {
+    max-width: 162px;
+    max-height: 162px;
+}
+.border-size-2 {
+    max-width: 141px;
+    max-height: 141px;
+}
+@media (min-width: 768px) {
+    .border-size-0 {
+        max-width: 335px;
+        max-height: 335px;
+    }
+    .border-size-1 {
+        max-width: 296px;
+        max-height: 296px;
+    }
+    .border-size-2 {
+        max-width: 257px;
+        max-height: 257px;
+    }
+}
 
 .css-dotted-border {
     border: 2px solid transparent;

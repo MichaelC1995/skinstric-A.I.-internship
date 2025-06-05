@@ -5,22 +5,27 @@ import Testing from "./pages/Testing";
 import Result from "./pages/Result";
 import Select from "./pages/Select";
 import Summary from "./pages/Summary";
+import Camera from "./pages/Camera";
 import {AnalysisProvider} from "./context/AnalysisContext";
+import {CameraProvider} from "./context/CameraContext";
 
 function App() {
     return (
-        <AnalysisProvider>
-            <Router>
-                <Navbar/>
-                <Routes>
-                    <Route path='/' element={<Home/>}/>
-                    <Route path='/testing' element={<Testing/>}/>
-                    <Route path='/result' element={<Result/>}/>
-                    <Route path='/select' element={<Select/>}/>
-                    <Route path='/summary' element={<Summary/>}/>
-                </Routes>
-            </Router>
-        </AnalysisProvider>
+        <CameraProvider>
+            <AnalysisProvider>
+                <Router>
+                    <Navbar/>
+                    <Routes>
+                        <Route path='/' element={<Home/>}/>
+                        <Route path='/testing' element={<Testing/>}/>
+                        <Route path='/result' element={<Result/>}/>
+                        <Route path='/select' element={<Select/>}/>
+                        <Route path='/summary' element={<Summary/>}/>
+                        <Route path='/camera' element={<Camera/>}/>
+                    </Routes>
+                </Router>
+            </AnalysisProvider>
+        </CameraProvider>
     );
 }
 
