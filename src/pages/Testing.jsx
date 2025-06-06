@@ -130,7 +130,7 @@ const Testing = () => {
     return (
         <div className="h-screen w-full flex flex-col items-center justify-center bg-white text-center overflow-hidden px-4 pt-20 pb-20">
             <div className="absolute top-16 left-4 sm:left-9 text-left">
-                <p className="font-semibold text-[10px] sm:text-xs">TO START ANALYSIS</p>
+                <p className="font-bold text-[12px]">TO START ANALYSIS</p>
             </div>
             <div className="relative flex flex-col items-center justify-center w-full h-full overflow-hidden">
                 {step === 1 ? (

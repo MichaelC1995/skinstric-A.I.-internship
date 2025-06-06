@@ -75,11 +75,10 @@ const Summary = () => {
             confidence
         }))
         .sort((a, b) => {
-            // Parse lower bound of age range (e.g., "0-2" -> 0, "3-9" -> 3)
             const getLowerBound = (range) => {
-                if (!range.includes('-')) return Number(range) || Infinity; // Handle "20+" or non-numeric
+                if (!range.includes('-')) return Number(range) || Infinity;
                 const lower = range.split('-')[0];
-                return Number(lower) || Infinity; // Fallback for malformed ranges
+                return Number(lower) || Infinity;
             };
             return getLowerBound(a.age) - getLowerBound(b.age);
         });

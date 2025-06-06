@@ -168,8 +168,8 @@ const Result = () => {
                     />
                 </div>
 
-                <div className="absolute top-2 left-4 sm:left-9 text-left z-10">
-                    <p className="font-semibold text-[10px] sm:text-xs">TO START ANALYSIS</p>
+                <div className="absolute top-16 left-4 sm:left-9 text-left z-10">
+                    <p className="font-bold text-[10px] sm:text-xs">TO START ANALYSIS</p>
                 </div>
 
                 <div className="absolute bottom-12 sm:bottom-8 w-full flex justify-between px-4 sm:px-9 opacity-100">

@@ -227,7 +227,7 @@ const CameraComponent = () => {
                         className="w-full h-full object-cover z-15"
                     />
 
-                    <div className="absolute bottom-10 left-10 z-20 flex items-center">
+                    <div className="absolute bottom-10 left-10 z-30 flex items-center">
                         <button
                             onClick={handleGoBack}
                             aria-label="Back"

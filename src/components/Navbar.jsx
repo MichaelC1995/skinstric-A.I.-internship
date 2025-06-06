@@ -1,9 +1,23 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { useCamera } from '../context/CameraContext';
+import {Link, useLocation} from 'react-router-dom';
+import {useCamera} from '../context/CameraContext';
 
 const Navbar = () => {
-    const { isCameraViewActive } = useCamera();
+    const {isCameraViewActive} = useCamera();
+    const location = useLocation();
+
+    const getPageText = () => {
+        switch (location.pathname) {
+            default:
+                return 'INTRO';
+            case '/select':
+                return 'ANALYSIS';
+            case '/summary':
+                return 'ANALYSIS';
+            case '/camera':
+                return 'ANALYSIS';
+        }
+    };
 
     return (
         <div
@@ -24,14 +38,14 @@ const Navbar = () => {
                     fill="currentColor"
                     aria-label="left-bracket"
                 >
-                    <path d="M0 0h2v17H0V0z M2 0h2v2H2V0z M2 15h2v2H2v-2z" />
+                    <path d="M0 0h2v17H0V0z M2 0h2v2H2V0z M2 15h2v2H2v-2z"/>
                 </svg>
                 <p
                     className={`text-sm font-semibold ml-1.5 mr-1.5 ${
                         isCameraViewActive ? 'text-white' : 'text-[#1a1b1c83]'
                     }`}
                 >
-                    INTRO
+                    {getPageText()}
                 </p>
                 <svg
                     className="w-[4px] h-[17px]"
@@ -39,7 +53,7 @@ const Navbar = () => {
                     fill="currentColor"
                     aria-label="right-bracket"
                 >
-                    <path d="M4 0H2v17h2V0z M2 0H0v2h2V0z M2 15H0v2h2v-2z" />
+                    <path d="M4 0H2v17h2V0z M2 0H0v2h2V0z M2 15H0v2h2v-2z"/>
                 </svg>
             </div>
             <button
