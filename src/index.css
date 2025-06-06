@@ -32,6 +32,19 @@ body {
     animation: fadeInOut 2s ease-in-out forwards;
 }
 
+.fade-text {
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+}
+.fade-text-entering {
+    opacity: 1;
+    animation: fadeIn 1s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
 
 @media (min-width: 768px) {
     .border-size-0 {

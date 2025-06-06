@@ -5,6 +5,9 @@ module.exports = {
     ],
     theme: {
         extend: {
+            scale: {
+                '130': '1.3',
+            },
             animation: {
                 'spin-slow': 'spin 5s linear infinite',
                 'spin-slower': 'spin 7s linear infinite',
