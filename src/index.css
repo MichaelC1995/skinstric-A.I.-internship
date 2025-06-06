@@ -21,7 +21,35 @@ body {
     max-width: 141px;
     max-height: 141px;
 }
+
+@keyframes fadeInOut {
+    0% { opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+}
+.animate-fadeInOut {
+    animation: fadeInOut 2s ease-in-out forwards;
+}
+
+
 @media (min-width: 768px) {
+    .border-size-0 {
+        max-width: 200px;
+        max-height: 200px;
+    }
+    .border-size-1 {
+        max-width: 180px;
+        max-height: 180px;
+    }
+    .border-size-2 {
+        max-width: 160px;
+        max-height: 160px;
+    }
+
+}
+
+@media (min-width: 928px) {
     .border-size-0 {
         max-width: 335px;
         max-height: 335px;

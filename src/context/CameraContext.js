@@ -4,9 +4,10 @@ const CameraContext = createContext();
 
 export const CameraProvider = ({ children }) => {
     const [isCameraViewActive, setIsCameraViewActive] = useState(false);
+    const [navbarText, setNavbarText] = useState('');
 
     return (
-        <CameraContext.Provider value={{ isCameraViewActive, setIsCameraViewActive }}>
+        <CameraContext.Provider value={{ isCameraViewActive, setIsCameraViewActive, navbarText, setNavbarText }}>
             {children}
         </CameraContext.Provider>
     );

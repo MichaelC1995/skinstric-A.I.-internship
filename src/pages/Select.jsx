@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { FaArrowRight, FaArrowLeft } from 'react-icons/fa';
-import { Link } from 'react-router-dom'; // Added for consistency
+import { Link } from 'react-router-dom';
 import { useAnalysis } from '../context/AnalysisContext';
 
 const Select = () => {
@@ -8,21 +8,21 @@ const Select = () => {
 
     useEffect(() => {
         if (!analysisResult) {
-        } else {
-            console.log('Analysis result in select page:', analysisResult);
         }
     }, [analysisResult]);
 
     return (
-        <div>
-            <div className="absolute top-10 left-8 text-left mt-5">
+        <div className="fixed inset-0 bg-white overflow-hidden">
+
+            <div className="absolute top-10 left-8 text-left mt-5 z-10">
                 <h1 className="text-base font-semibold leading-[24px] tracking-tight">A.I. ANALYSIS</h1>
                 <p className="text-sm mt-1 text-muted-foreground uppercase leading-[24px]">
                     A.I. has estimated the following.<br />Fix estimated information if needed.
                 </p>
             </div>
-            <div className="h-[78.3vh] flex flex-col items-center justify-center bg-white">
-                <div className="relative group">
+
+            <div className="flex flex-col items-center justify-center h-full">
+                <div className="relative group max-h-[calc(100vh-200px)]">
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                         <div
                             className="absolute w-[400px] h-[400px] border-dotted border-2 border-black opacity-0 group-hover:opacity-15 transition-opacity duration-300 rotate-45"
@@ -87,38 +87,37 @@ const Select = () => {
                     </div>
                 </div>
             </div>
-            <div className="pt-4 md:pt-[37px] pb-6 bg-white sticky bottom-40 md:static md:bottom-0 mb-8 md:mb-16 md:flex-shrink-0">
-                <div className="w-full max-w-screen mx-auto px-4 md:px-4">
-                    <div className="flex justify-between">
-                        <Link to="/result">
-                            <div>
-                                <div className="relative w-12 h-12 flex items-center justify-center border border-[#1A1B1C] rotate-45 scale-[1] sm:hidden">
-                                    <span className="rotate-[-45deg] text-xs font-semibold sm:hidden">BACK</span>
-                                </div>
-                                <div className="group hidden sm:flex flex-row relative justify-center items-center">
-                                    <div className="w-12 h-12 hidden sm:flex justify-center border border-[#1A1B1C] rotate-45 scale-[0.85] group-hover:scale-[0.92] ease duration-300"></div>
-                                    <FaArrowLeft
-                                        className="absolute left-[16px] bottom-[15px] scale-[0.9] hidden sm:block group-hover:scale-[0.92] ease duration-300"
-                                    />
-                                    <span className="text-sm font-semibold hidden sm:block ml-4">BACK</span>
-                                </div>
+
+            <div className="fixed bottom-0 left-0 right-0 bg-white px-4 py-4 z-10">
+                <div className="w-full max-w-screen mx-auto flex justify-between">
+                    <Link to="/result">
+                        <div>
+                            <div className="relative w-12 h-12 flex items-center justify-center border border-[#1A1B1C] rotate-45 scale-[1] sm:hidden">
+                                <span className="rotate-[-45deg] text-xs font-semibold sm:hidden">BACK</span>
                             </div>
-                        </Link>
-                        <Link to="/summary">
-                            <div>
-                                <div className="w-12 h-12 flex items-center justify-center border border-[#1A1B1C] rotate-45 scale-[1] sm:hidden">
-                                    <span className="rotate-[-45deg] text-xs font-semibold sm:hidden">SUM</span>
-                                </div>
-                                <div className="group hidden sm:flex flex-row relative justify-center items-center">
-                                    <span className="text-sm font-semibold hidden sm:block mr-4">GET SUMMARY</span>
-                                    <div className="w-12 h-12 hidden sm:flex justify-center border border-[#1A1B1C] rotate-45 scale-[0.85] group-hover:scale-[0.92] ease duration-300"></div>
-                                    <FaArrowRight
-                                        className="absolute right-[16px] bottom-[15px] scale-[0.9] hidden sm:block group-hover:scale-[0.92] ease duration-300"
-                                    />
-                                </div>
+                            <div className="group hidden sm:flex flex-row relative justify-center items-center">
+                                <div className="w-12 h-12 hidden sm:flex justify-center border border-[#1A1B1C] rotate-45 scale-[0.85] group-hover:scale-[0.92] ease duration-300"></div>
+                                <FaArrowLeft
+                                    className="absolute left-[16px] bottom-[15px] scale-[0.9] hidden sm:block group-hover:scale-[0.92] ease duration-300"
+                                />
+                                <span className="text-sm font-semibold hidden sm:block ml-4">BACK</span>
                             </div>
-                        </Link>
-                    </div>
+                        </div>
+                    </Link>
+                    <Link to="/summary">
+                        <div>
+                            <div className="w-12 h-12 flex items-center justify-center border border-[#1A1B1C] rotate-45 scale-[1] sm:hidden">
+                                <span className="rotate-[-45deg] text-xs font-semibold sm:hidden">SUM</span>
+                            </div>
+                            <div className="group hidden sm:flex flex-row relative justify-center items-center">
+                                <span className="text-sm font-semibold hidden sm:block mr-4">GET SUMMARY</span>
+                                <div className="w-12 h-12 hidden sm:flex justify-center border border-[#1A1B1C] rotate-45 scale-[0.85] group-hover:scale-[0.92] ease duration-300"></div>
+                                <FaArrowRight
+                                    className="absolute right-[16px] bottom-[15px] scale-[0.9] hidden sm:block group-hover:scale-[0.92] ease duration-300"
+                                />
+                            </div>
+                        </div>
+                    </Link>
                 </div>
             </div>
         </div>

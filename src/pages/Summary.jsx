@@ -7,7 +7,6 @@ import { useAnalysis } from "../context/AnalysisContext";
 const Summary = () => {
     const { analysisData } = useAnalysis();
 
-    console.log('Analysis Data in Summary:', analysisData);
 
     const [selectedRace, setSelectedRace] = useState('');
     const [selectedConfidence, setSelectedConfidence] = useState(0);
@@ -92,7 +91,6 @@ const Summary = () => {
         }))
         .sort((a, b) => b.confidence - a.confidence);
 
-    console.log('agePredictions:', agePredictions); // Debug order
 
     const selectedConfidencePercentage = Math.round(selectedConfidence * 100);
 
