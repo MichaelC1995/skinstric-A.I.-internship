@@ -19,17 +19,27 @@ const LocationForm = ({ onSubmit, error, isSubmitting, cityInputRef, isLocationF
                 </>
             ) : (
                 <>
-                    <p
-                        id="location-instruction"
-                        className={`text-[10px] sm:text-xs text-gray-400 tracking-wider uppercase mb-1 pointer-events-none transition-opacity duration-300 ${
-                            isLocationFilled ? 'opacity-100' : 'opacity-50'
-                        }`}
-                    >
-                        {isLocationFilled ? 'WHERE ARE YOU FROM?' : 'CLICK TO TYPE'}
-                    </p>
+                    <div className="relative h-4 sm:h-5 mb-2 w-full text-center">
+                        <p
+                            id="location-instruction"
+                            className={`absolute left-0 right-0 text-center text-[10px] sm:text-xs text-gray-400 tracking-wider uppercase pointer-events-none transition-opacity duration-700 ${
+                                isLocationFilled ? 'opacity-100' : 'opacity-0'
+                            }`}
+                        >
+                            WHERE ARE YOU FROM?
+                        </p>
+                        <p
+                            id="click-to-type"
+                            className={`absolute left-0 right-0 text-center text-[10px] sm:text-xs text-gray-400 tracking-wider uppercase pointer-events-none transition-opacity duration-700 ${
+                                isLocationFilled ? 'opacity-0' : 'opacity-100'
+                            }`}
+                        >
+                            CLICK TO TYPE
+                        </p>
+                    </div>
                     <input
                         ref={cityInputRef}
-                        className="text-4xl sm:text-5xl font-normal text-center bg-transparent border-b border-black focus:outline-none appearance-none w-[98vw] max-w-[448px] min-w-[280px] mt-2 pt-1 px-2 tracking-[-0.05em] leading-[50px] sm:leading-[64px] text-[#1A1B1C] placeholder:text-black placeholder:opacity-100 sm:placeholder:text-[48px]"
+                        className="text-4xl sm:text-5xl font-normal text-center bg-transparent border-b border-black focus:outline-none appearance-none w-[98vw] max-w-[448px] min-w-[280px] pt-1 px-2 tracking-[-0.05em] leading-[50px] sm:leading-[64px] text-[#1A1B1C] placeholder:text-black placeholder:opacity-100 sm:placeholder:text-[48px]"
                         placeholder="Where are you from?"
                         autoComplete="off"
                         type="text"
@@ -43,7 +53,7 @@ const LocationForm = ({ onSubmit, error, isSubmitting, cityInputRef, isLocationF
                             onChange: (e) => setIsLocationFilled(e.target.value.trim().length > 0),
                         })}
                         disabled={isSubmitting}
-                        aria-describedby="location-instruction"
+                        aria-describedby="location-instruction click-to-type"
                     />
                     {error && <p className="text-red-500 text-[10px] sm:text-xs mt-2" role="alert">{error}</p>}
                 </>
