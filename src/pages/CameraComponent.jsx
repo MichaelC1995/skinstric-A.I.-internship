@@ -100,32 +100,35 @@ const CameraComponent = () => {
                 return;
             }
 
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            // Wait briefly to ensure video stream is ready
+            setTimeout(() => {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            const base64Image = canvas.toDataURL('image/jpeg', 0.8);
-            console.log('Captured base64 image length:', base64Image.length);
-            console.log('Base64 image preview:', base64Image.substring(0, 100));
+                const base64Image = canvas.toDataURL('image/jpeg', 0.8);
+                console.log('Captured base64 image length:', base64Image.length);
+                console.log('Base64 image preview:', base64Image.substring(0, 100));
 
-            if (stream) {
-                stream.getTracks().forEach(track => track.enabled = false);
-            }
+                if (base64Image.length < 100) {
+                    console.error('Captured image is too small or invalid');
+                    setError('Failed to capture valid image. Please try again.');
+                    return;
+                }
 
-            setCapturedImage(base64Image);
-            setShowCameraView(false);
-            setShowPreview(true);
-            setNavbarText('ANALYSIS');
+                if (stream) {
+                    stream.getTracks().forEach(track => track.enabled = false);
+                }
+
+                setCapturedImage(base64Image);
+                setShowCameraView(false);
+                setShowPreview(true);
+                setNavbarText('ANALYSIS');
+            }, 500); // 500ms delay to ensure video stream is stable
         } else {
             console.error('Video or canvas ref is null:', { videoRef: !!videoRef.current, canvasRef: !!canvasRef.current });
             setError('Failed to capture image. Please try again.');
         }
-    };
-
-    const handleProceed = () => {
-        setShowPreview(false);
-        setNavbarText('ANALYSIS');
-        uploadImage(capturedImage);
     };
 
     const uploadImage = async (base64String) => {
@@ -137,6 +140,7 @@ const CameraComponent = () => {
                 throw new Error('Invalid image data: empty or too small');
             }
             console.log('Uploading image, length:', base64String.length);
+            console.log('Base64 image start:', base64String.substring(0, 100));
             const response = await fetch('https://us-central1-api-skinstric-ai.cloudfunctions.net/skinstricPhaseTwo', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -144,6 +148,7 @@ const CameraComponent = () => {
             });
             const result = await response.json();
             console.log('API response:', result);
+            console.log('API response headers:', Object.fromEntries(response.headers.entries()));
             if (!response.ok) {
                 console.error('API error details:', result);
                 throw new Error(`Upload failed: ${result.message || 'No analysis data'}`);
@@ -159,6 +164,12 @@ const CameraComponent = () => {
         } finally {
             setIsUploading(false);
         }
+    };
+
+    const handleProceed = () => {
+        setShowPreview(false);
+        setNavbarText('ANALYSIS');
+        uploadImage(capturedImage);
     };
 
     const handleGoBack = () => {
