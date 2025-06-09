@@ -39,7 +39,7 @@ const LocationForm = ({ onSubmit, error, isSubmitting, cityInputRef, isLocationF
                     </div>
                     <input
                         ref={cityInputRef}
-                        className="text-4xl font-normal text-center bg-transparent border-b border-black focus:outline-none appearance-none w-[98vw] max-w-[448px] min-w-[280px] pt-1 px-2 tracking-[-0.05em] leading-[50px] sm:leading-[64px] text-[#1A1B1C] placeholder:text-black placeholder:opacity-100"
+                        className="text-5xl font-normal text-center bg-transparent border-b border-black focus:outline-none appearance-none w-[110vw] max-w-[448px] min-w-[300px] pt-1  tracking-[-0.05em] leading-[50px] sm:leading-[64px] text-[#1A1B1C] placeholder:text-black placeholder:opacity-100"
                         placeholder="Where are you from?"
                         autoComplete="off"
                         type="text"

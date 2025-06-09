@@ -64,7 +64,7 @@ const Result = () => {
             }
 
             setAnalysisData(result);
-            navigate('/select');
+            navigate('/select', { state: { analysisData: result } });
         } catch (err) {
             setError(err.name === 'AbortError' ? 'Request timed out. Please try again.' : err.message);
         } finally {

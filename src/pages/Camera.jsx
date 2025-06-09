@@ -16,12 +16,31 @@ const Camera = () => {
     const [analysisData, setAnalysisData] = useState(null);
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
+    const fileInputRef = useRef(null);
     const navigate = useNavigate();
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
     useEffect(() => {
         setIsCameraViewActive(true);
-        initializeCamera();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const isGalleryMode = urlParams.get('mode') === 'gallery' || sessionStorage.getItem('pendingGalleryUpload') === 'true';
+
+        if (isGalleryMode) {
+            sessionStorage.removeItem('pendingGalleryUpload');
+            if (!fileInputRef.current) {
+                console.error('fileInputRef.current is missing');
+                setError('File input not found. Please try again.');
+                navigate('/result');
+                return;
+            }
+            setTimeout(() => {
+                fileInputRef.current.click();
+            }, 100);
+        } else {
+            initializeCamera();
+        }
+
         return () => {
             setIsCameraViewActive(false);
             setNavbarText('');
@@ -37,6 +56,7 @@ const Camera = () => {
                 videoRef.current.play()
                     .catch(err => {
                         if (err.name !== 'AbortError') {
+                            console.error('Video play error:', err);
                             setError(`Failed to play video: ${err.message}`);
                         }
                     });
@@ -49,13 +69,16 @@ const Camera = () => {
                 }
             };
         } else if (showCameraView && stream && !videoRef.current) {
+            console.error('Video element not found');
             setError('Video element not found. Please try again.');
         }
     }, [showCameraView, stream]);
 
     const cleanupCamera = () => {
         if (stream) {
-            stream.getTracks().forEach(track => track.stop());
+            stream.getTracks().forEach(track => {
+                track.stop();
+            });
             setStream(null);
         }
         if (videoRef.current) {
@@ -66,6 +89,7 @@ const Camera = () => {
     const initializeCamera = async () => {
         setShowCameraLoading(true);
         setError(null);
+
         try {
             const constraints = {
                 video: {
@@ -84,6 +108,7 @@ const Camera = () => {
             setShowCameraLoading(false);
             setShowCameraView(true);
         } catch (err) {
+            console.error('Camera initialization failed:', err);
             setShowCameraLoading(false);
             if (err.name === 'NotAllowedError') {
                 setError('Camera access denied. Please allow camera access and try again.');
@@ -97,6 +122,52 @@ const Camera = () => {
         }
     };
 
+    const handleGalleryUpload = (event) => {
+        const file = event.target.files?.[0];
+        if (!file) {
+            navigate('/result');
+            return;
+        }
+
+
+        if (!file.type.startsWith('image/')) {
+            console.error('Invalid file type:', file.type);
+            setError('Please select a valid image file');
+            return;
+        }
+
+        if (file.size > 10 * 1024 * 1024) {
+            console.error('File size exceeds 10MB:', file.size);
+            setError('File size exceeds 10MB. Please select a smaller image.');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const base64Image = e.target.result;
+            if (!base64Image || base64Image === 'data:,' || base64Image.length < 100) {
+                console.error('Invalid image data from FileReader');
+                setError('Invalid image data. Please select a valid image.');
+                return;
+            }
+            setCapturedImage(base64Image);
+            setShowCameraView(false);
+            setShowCameraLoading(false);
+            setShowPreview(true);
+            setNavbarText('ANALYSIS');
+            cleanupCamera();
+        };
+        reader.onerror = () => {
+            console.error('FileReader error');
+            setError('Failed to read the selected image. Please try again.');
+        };
+        reader.readAsDataURL(file);
+
+        if (event.target) {
+            event.target.value = '';
+        }
+    };
+
     const handleCameraCapture = () => {
         if (videoRef.current && canvasRef.current) {
             const video = videoRef.current;
@@ -104,6 +175,7 @@ const Camera = () => {
             const context = canvas.getContext('2d');
 
             if (video.videoWidth === 0 || video.videoHeight === 0) {
+                console.error('Camera feed not loaded, video dimensions:', video.videoWidth, video.videoHeight);
                 setError('Camera feed not loaded. Please try again.');
                 return;
             }
@@ -116,6 +188,7 @@ const Camera = () => {
                 const base64Image = canvas.toDataURL('image/jpeg', 0.95);
 
                 if (!base64Image || base64Image === 'data:,' || base64Image.length < 100) {
+                    console.error('Invalid image captured');
                     setError('Failed to capture valid image. Please try again.');
                     return;
                 }
@@ -130,6 +203,7 @@ const Camera = () => {
                 setNavbarText('ANALYSIS');
             });
         } else {
+            console.error('Video or canvas ref missing:', { videoRef: !!videoRef.current, canvasRef: !!canvasRef.current });
             setError('Failed to capture image. Please try again.');
         }
     };
@@ -137,15 +211,19 @@ const Camera = () => {
     const uploadImage = async (base64String) => {
         setIsUploading(true);
         setError(null);
+
         try {
             if (!base64String || typeof base64String !== 'string') {
-                throw new Error('Invalid image data: not a string');
+                console.error('Invalid base64String:', base64String);
+                throw new Error('Please take or select a picture first.');
             }
             if (!base64String.startsWith('data:image/')) {
+                console.error('Not a valid image data URL');
                 throw new Error('Invalid image data: not a valid image data URL');
             }
             const base64Data = base64String.split(',')[1];
             if (!base64Data || base64Data.length < 100) {
+                console.error('Base64 content too small:', base64Data?.length);
                 throw new Error('Invalid image data: base64 content too small');
             }
 
@@ -159,34 +237,44 @@ const Camera = () => {
             });
 
             const responseText = await response.text();
+
             let result;
             try {
                 result = JSON.parse(responseText);
             } catch (parseError) {
+                console.error('Failed to parse API response:', parseError, 'responseText:', responseText.substring(0, 100));
                 throw new Error(`Invalid response from server: ${responseText.substring(0, 100)}`);
             }
 
             if (response.status !== 200 && response.status !== 201) {
+                console.error('API request failed, status:', response.status, 'message:', result.message || result.error);
                 throw new Error(`Upload failed with status ${response.status}: ${result.message || result.error || 'Unknown error'}`);
             }
 
             if (result.error || result.message === 'No analysis data available') {
+                console.error('API returned error:', result.error || result.message);
                 throw new Error(result.error || result.message || 'Analysis failed');
             }
 
             if (!result || (typeof result === 'object' && Object.keys(result).length === 0)) {
+                console.error('No analysis data received');
                 throw new Error('No analysis data received from server');
             }
 
             const analysisData = result.data || result.analysis || result.results || result;
-
             setAnalysisData(analysisData);
 
             try {
                 sessionStorage.setItem('analysisData', JSON.stringify(analysisData));
                 sessionStorage.setItem('analysisTimestamp', Date.now().toString());
-            } catch (storageError) {
 
+                const testRead = sessionStorage.getItem('analysisData');
+                if (!testRead) {
+                    console.error('Failed to verify sessionStorage write');
+                    throw new Error('Failed to verify sessionStorage write');
+                }
+            } catch (storageError) {
+                console.error('Failed to store analysis data in sessionStorage:', storageError);
             }
 
             setNavbarText('ANALYSIS');
@@ -194,10 +282,12 @@ const Camera = () => {
                 state: {
                     analysisData: analysisData,
                     timestamp: Date.now(),
-                    debug: 'Camera navigation successful'
+                    debug: 'Camera navigation successful',
+                    source: showCameraView ? 'camera' : 'gallery'
                 }
             });
         } catch (err) {
+            console.error('uploadImage error:', err.message);
             setError(`Failed to upload image: ${err.message}`);
             setShowPreview(true);
         } finally {
@@ -206,6 +296,11 @@ const Camera = () => {
     };
 
     const handleProceed = () => {
+        if (!capturedImage || typeof capturedImage !== 'string' || !capturedImage.startsWith('data:image/')) {
+            console.error('Invalid capturedImage, cannot proceed');
+            setError('Please take or select a picture first.');
+            return;
+        }
         setShowPreview(false);
         setNavbarText('ANALYSIS');
         uploadImage(capturedImage);
@@ -227,6 +322,14 @@ const Camera = () => {
 
     return (
         <>
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleGalleryUpload}
+                style={{ display: 'none' }}
+            />
+
             {(showCameraView || showCameraLoading || error) && !isUploading && !showPreview && (
                 <div className="fixed inset-0 bg-black z-10 overflow-hidden">
                     {showCameraView && (
@@ -237,7 +340,10 @@ const Camera = () => {
                             muted
                             className="w-full h-full object-cover z-[15]"
                             style={{ display: 'block', transform: 'scaleX(-1)' }}
-                            onError={(e) => setError('Video element error occurred.')}
+                            onError={(e) => {
+                                console.error('Video element error:', e);
+                                setError('Video element error occurred.');
+                            }}
                         />
                     )}
 
@@ -352,7 +458,9 @@ const Camera = () => {
                         />
                     </div>
 
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 translate-y-12 z-50">
+                    <div
+                        className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 translate-y-12 z-50`}
+                    >
                         <h2
                             className={`font-semibold text-black tracking-wide text-center ${
                                 isMobile ? 'text-[12.6px]' : 'text-sm'

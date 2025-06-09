@@ -83,52 +83,55 @@ const Testing = () => {
     }, [handleTransition, reset]);
 
     return (
-        <div className="flex flex-col items-center justify-center bg-white text-center overflow-hidden px-4 pt-20 pb-20" style={{ height: `calc(100vh - 60px)` }}>
-            <div className="absolute top-16 left-4 sm:left-9 text-left">
+        <div className="relative bg-white text-center overflow-hidden px-4 mb-20" style={{ height: `calc(100vh - 60px)` }}>
+            <div className="absolute top-0 left-4 sm:left-9 text-left z-10">
                 <p className="font-bold text-[12px]">TO START ANALYSIS</p>
             </div>
-            <div className="relative flex flex-col items-center justify-center w-full h-full sm:scale-100 scale-[0.6]">
-                {step === STEPS.NAME ? (
-                    <NameForm onSubmit={handleSubmit(handleNameSubmit)} error={errors.name?.message} register={register} />
-                ) : step === STEPS.LOCATION ? (
-                    <LocationForm
-                        onSubmit={handleSubmit(handleLocationSubmit)}
-                        error={errors.location?.message || formError}
-                        isSubmitting={isSubmitting}
-                        cityInputRef={cityInputRef}
-                        isLocationFilled={isLocationFilled}
-                        setIsLocationFilled={setIsLocationFilled}
-                        register={register}
-                    />
-                ) : step === STEPS.ERROR ? (
-                    <ErrorStep
-                        onRetry={() => handleTransition(STEPS.LOCATION)}
-                        onRestart={handleProceed}
-                        error={formError}
-                    />
-                ) : null}
 
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div
-                        className={`absolute w-[98vw] h-[98vw] max-w-[336px] max-h-[336px] sm:max-w-[420px] sm:max-h-[420px] border-dotted border-2 border-black opacity-15 transition-opacity duration-300 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rotate-45 ${
-                            step === STEPS.LOCATION && isSubmitting ? 'animate-spin-slow' : ''
-                        }`}
-                    ></div>
+            <div className="fixed inset-0 flex items-center justify-center pointer-events-none">
+                <div className="relative flex flex-col items-center justify-center w-full sm:scale-100 scale-[0.6] pointer-events-auto">
+                    {step === STEPS.NAME ? (
+                        <NameForm onSubmit={handleSubmit(handleNameSubmit)} error={errors.name?.message} register={register} />
+                    ) : step === STEPS.LOCATION ? (
+                        <LocationForm
+                            onSubmit={handleSubmit(handleLocationSubmit)}
+                            error={errors.location?.message || formError}
+                            isSubmitting={isSubmitting}
+                            cityInputRef={cityInputRef}
+                            isLocationFilled={isLocationFilled}
+                            setIsLocationFilled={setIsLocationFilled}
+                            register={register}
+                        />
+                    ) : step === STEPS.ERROR ? (
+                        <ErrorStep
+                            onRetry={() => handleTransition(STEPS.LOCATION)}
+                            onRestart={handleProceed}
+                            error={formError}
+                        />
+                    ) : null}
                 </div>
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div
-                        className={`absolute w-[112vw] h-[112vw] max-w-[392px] max-h-[392px] sm:max-w-[490px] sm:max-h-[490px] border-dotted border-2 border-black opacity-10 transition-opacity duration-300 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rotate-45 ${
-                            step === STEPS.LOCATION && isSubmitting ? 'animate-spin-slower' : ''
-                        }`}
-                    ></div>
-                </div>
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div
-                        className={`absolute w-[126vw] h-[126vw] max-w-[448px] max-h-[448px] sm:max-w-[560px] sm:max-h-[560px] border-dotted border-2 border-black opacity-5 transition-opacity duration-300 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rotate-45 ${
-                            step === STEPS.LOCATION && isSubmitting ? 'animate-spin-slowest' : ''
-                        }`}
-                    ></div>
-                </div>
+            </div>
+
+            <div className="fixed inset-0 flex items-center justify-center pointer-events-none">
+                <div
+                    className={`absolute w-[70.56vw] md:w-[98vw] h-[70.56vw] md:h-[98vw] max-w-[241.92px] max-h-[241.92px] md:max-w-[420px] md:max-h-[420px] border-dotted border-2 border-black opacity-15 transition-opacity duration-300 rotate-45 ${
+                        step === STEPS.LOCATION && isSubmitting ? 'animate-spin-slow' : ''
+                    }`}
+                ></div>
+            </div>
+            <div className="fixed inset-0 flex items-center justify-center pointer-events-none">
+                <div
+                    className={`absolute w-[80.64vw] md:w-[112vw] h-[80.64vw] md:h-[112vw] max-w-[282.24px] max-h-[282.24px] md:max-w-[490px] md:max-h-[490px] border-dotted border-2 border-black opacity-10 transition-opacity duration-300 rotate-45 ${
+                        step === STEPS.LOCATION && isSubmitting ? 'animate-spin-slower' : ''
+                    }`}
+                ></div>
+            </div>
+            <div className="fixed inset-0 flex items-center justify-center pointer-events-none">
+                <div
+                    className={`absolute w-[90.72vw] md:w-[126vw] h-[90.72vw] md:h-[126vw] max-w-[322.56px] max-h-[322.56px] md:max-w-[560px] md:max-h-[560px] border-dotted border-2 border-black opacity-5 transition-opacity duration-300 rotate-45 ${
+                        step === STEPS.LOCATION && isSubmitting ? 'animate-spin-slowest' : ''
+                    }`}
+                ></div>
             </div>
 
             <div className="absolute bottom-12 sm:bottom-8 w-full flex justify-between px-4 sm:px-9 opacity-100">

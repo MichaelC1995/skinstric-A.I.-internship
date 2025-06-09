@@ -17,22 +17,22 @@ const Select = () => {
             return;
         }
 
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
         let data = location.state?.analysisData;
-
 
         if (!data) {
             const storedData = sessionStorage.getItem('analysisData');
-
             if (storedData) {
                 try {
                     data = JSON.parse(storedData);
-                } catch (e) {
-                    console.error('Failed to parse stored analysis data:', e);
-                    if (process.env.NODE_ENV === 'development') {
-                        console.error('Raw stored data:', storedData);
+                    if (!data || typeof data !== 'object' || !Object.keys(data).length) {
+                        throw new Error('Invalid analysis data format');
                     }
+                } catch (e) {
+                    console.error('Select: Failed to parse stored analysis data:', e);
+                    setError('Invalid analysis data. Please try again.');
+                    setIsLoading(false);
+                    navigate('/camera');
+                    return;
                 }
             }
         }
@@ -40,19 +40,16 @@ const Select = () => {
         if (!data || (typeof data === 'object' && Object.keys(data).length === 0)) {
             setError('No analysis data available. Please take a photo first.');
             setIsLoading(false);
-            setTimeout(() => {
-                navigate('/camera');
-            }, 3000);
-        } else {
-            dataLoadedRef.current = true;
-            setAnalysisData(data);
-
-            setContextAnalysisData({ data: data });
-
-            setIsLoading(false);
-            setError(null);
+            navigate('/camera');
+            return;
         }
-    }, []);
+
+        dataLoadedRef.current = true;
+        setAnalysisData(data);
+        setContextAnalysisData(data);
+        setIsLoading(false);
+        setError(null);
+    }, [navigate, setContextAnalysisData]);
 
     if (isLoading) {
         return (
@@ -137,7 +134,10 @@ const Select = () => {
                     </div>
                     <div className="relative z-10 grid grid-cols-3 grid-rows-3 gap-1 md:gap-0">
                         <div className="flex items-center justify-center col-start-2">
-                            <Link to="/summary">
+                            <Link
+                                to="/summary"
+                                state={{ analysisData }}
+                            >
                                 <button
                                     className="w-[140px] h-[140px] md:w-[155px] md:h-[155px] bg-gray-200 hover:bg-gray-300 transform rotate-45 flex items-center justify-center -m-5 cursor-pointer font-semibold leading-[24px] tracking-tight uppercase hover:scale-[1.05] transition-transform duration-300"
                                 >
@@ -186,7 +186,10 @@ const Select = () => {
                             </div>
                         </div>
                     </Link>
-                    <Link to="/summary">
+                    <Link
+                        to="/summary"
+                        state={{ analysisData }}
+                    >
                         <div>
                             <div className="w-12 h-12 flex items-center justify-center border border-[#1A1B1C] rotate-45 scale-[1] sm:hidden">
                                 <span className="rotate-[-45deg] text-xs font-semibold sm:hidden">SUM</span>
