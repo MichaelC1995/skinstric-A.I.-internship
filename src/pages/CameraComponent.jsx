@@ -20,7 +20,6 @@ const CameraComponent = () => {
 
     useEffect(() => {
         setIsCameraViewActive(true);
-        // Initialize camera automatically on mount
         initializeCamera();
         return () => {
             setIsCameraViewActive(false);
@@ -29,7 +28,6 @@ const CameraComponent = () => {
         };
     }, [setIsCameraViewActive, setNavbarText]);
 
-    // Assign stream to videoRef when showCameraView and stream are ready
     useEffect(() => {
         if (showCameraView && stream && videoRef.current) {
             console.log('Assigning stream to videoRef');
@@ -61,14 +59,17 @@ const CameraComponent = () => {
         setShowCameraLoading(true);
         setError(null);
         try {
-            const mediaStream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 },
-                    facingMode: 'user'
-                },
-                audio: false
-            });
+            const [mediaStream] = await Promise.all([
+                navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        facingMode: 'user'
+                    },
+                    audio: false
+                }),
+                new Promise(resolve => setTimeout(resolve, 500))
+            ]);
             console.log('Media stream obtained:', mediaStream);
             setStream(mediaStream);
             setShowCameraLoading(false);
@@ -100,7 +101,6 @@ const CameraComponent = () => {
                 return;
             }
 
-            // Wait briefly to ensure video stream is ready
             setTimeout(() => {
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
@@ -124,7 +124,7 @@ const CameraComponent = () => {
                 setShowCameraView(false);
                 setShowPreview(true);
                 setNavbarText('ANALYSIS');
-            }, 500); // 500ms delay to ensure video stream is stable
+            }, 500);
         } else {
             console.error('Video or canvas ref is null:', { videoRef: !!videoRef.current, canvasRef: !!canvasRef.current });
             setError('Failed to capture image. Please try again.');
@@ -160,7 +160,7 @@ const CameraComponent = () => {
         } catch (err) {
             console.error('Upload error:', err.name, err.message);
             setError(`Failed to upload image: ${err.message}`);
-            setShowPreview(true); // Return to preview for retry
+            setShowPreview(true);
         } finally {
             setIsUploading(false);
         }
