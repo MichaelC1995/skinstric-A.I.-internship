@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaPlay } from 'react-icons/fa';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAnalysis } from '../context/AnalysisContext';
 
 const Select = () => {
     const location = useLocation();
     const navigate = useNavigate();
+    const { setAnalysisData: setContextAnalysisData } = useAnalysis();
     const [analysisData, setAnalysisData] = useState(null);
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -80,6 +82,11 @@ const Select = () => {
             }
             dataLoadedRef.current = true;
             setAnalysisData(data);
+
+            // Set the data in the context for the Summary component
+            // The Summary component expects the data in this format: { data: analysisData }
+            setContextAnalysisData({ data: data });
+
             setIsLoading(false);
             setError(null);
             // Don't clear sessionStorage immediately - keep it as backup
@@ -179,7 +186,7 @@ const Select = () => {
                     </div>
                     <div className="relative z-10 grid grid-cols-3 grid-rows-3 gap-0">
                         <div className="flex items-center justify-center col-start-2">
-                            <Link to="/summary" state={{ analysisData }}>
+                            <Link to="/summary">
                                 <button
                                     className="w-[153.88px] h-[153.88px] bg-gray-200 hover:bg-gray-300 transform rotate-45 flex items-center justify-center -m-5 cursor-pointer font-semibold leading-[24px] tracking-tight uppercase hover:scale-[1.05] transition-transform duration-300"
                                 >
@@ -228,7 +235,7 @@ const Select = () => {
                             </div>
                         </div>
                     </Link>
-                    <Link to="/summary" state={{ analysisData }}>
+                    <Link to="/summary">
                         <div>
                             <div className="w-12 h-12 flex items-center justify-center border border-[#1A1B1C] rotate-45 scale-[1] sm:hidden">
                                 <span className="rotate-[-45deg] text-xs font-semibold sm:hidden">SUM</span>
