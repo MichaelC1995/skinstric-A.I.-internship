@@ -14,6 +14,12 @@ const Select = () => {
         console.log('Location state type:', typeof location.state);
         console.log('Has analysisData in state:', !!location.state?.analysisData);
 
+        // Mobile debug alert
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        if (isMobile) {
+            alert(`Select Component Debug:\nHas location state: ${!!location.state}\nHas analysisData: ${!!location.state?.analysisData}\nSessionStorage check: ${!!sessionStorage.getItem('analysisData')}`);
+        }
+
         // First try to get data from navigation state
         let data = location.state?.analysisData;
 
@@ -33,6 +39,10 @@ const Select = () => {
                     console.log('Parsed data:', data);
                     console.log('Data type:', typeof data);
                     console.log('Data keys:', Object.keys(data || {}));
+
+                    if (isMobile) {
+                        alert(`SessionStorage Data Found:\nKeys: ${Object.keys(data || {}).slice(0, 5).join(', ')}\nHas race: ${!!data?.race}`);
+                    }
                 } catch (e) {
                     console.error('Failed to parse stored analysis data:', e);
                     console.error('Raw stored data:', storedData);
