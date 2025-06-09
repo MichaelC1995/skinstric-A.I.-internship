@@ -9,34 +9,53 @@ const Select = () => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
+        console.log('=== SELECT COMPONENT DEBUG ===');
+        console.log('Location state:', location.state);
+        console.log('Location state type:', typeof location.state);
+        console.log('Has analysisData in state:', !!location.state?.analysisData);
+
         // First try to get data from navigation state
         let data = location.state?.analysisData;
 
         // If not found, try sessionStorage as backup
         if (!data) {
+            console.log('No data in location state, checking sessionStorage...');
             const storedData = sessionStorage.getItem('analysisData');
+            const storedTimestamp = sessionStorage.getItem('analysisTimestamp');
+
+            console.log('SessionStorage has data:', !!storedData);
+            console.log('Data timestamp:', storedTimestamp);
+
             if (storedData) {
                 try {
                     data = JSON.parse(storedData);
                     console.log('Retrieved analysis data from sessionStorage');
+                    console.log('Parsed data:', data);
+                    console.log('Data type:', typeof data);
+                    console.log('Data keys:', Object.keys(data || {}));
                 } catch (e) {
                     console.error('Failed to parse stored analysis data:', e);
+                    console.error('Raw stored data:', storedData);
                 }
             }
+        } else {
+            console.log('Found data in location state');
+            console.log('Data:', data);
+            console.log('Data type:', typeof data);
+            console.log('Data keys:', Object.keys(data || {}));
         }
 
-        if (!data) {
-            console.error('No analysis data available');
+        if (!data || (typeof data === 'object' && Object.keys(data).length === 0)) {
+            console.error('No analysis data available or data is empty');
             setError('No analysis data available. Please take a photo first.');
             // Optionally redirect back to camera after a delay
             setTimeout(() => {
                 navigate('/camera');
             }, 3000);
         } else {
-            console.log('Analysis data available:', data);
+            console.log('Analysis data successfully loaded:', data);
             setAnalysisData(data);
-            // Clear sessionStorage after successful retrieval
-            sessionStorage.removeItem('analysisData');
+            // Don't clear sessionStorage immediately - keep it as backup
         }
     }, [location.state, navigate]);
 

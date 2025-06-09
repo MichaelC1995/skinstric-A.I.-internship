@@ -215,41 +215,76 @@ const CameraComponent = () => {
 
             console.log('Parsed API response:', result);
             console.log('Response status:', response.status);
+            console.log('Response type:', typeof result);
 
-            if (!response.ok) {
-                console.error('API error details:', result);
-                throw new Error(`Upload failed: ${result.message || result.error || 'Unknown error'}`);
+            // Check for various API response formats
+            if (response.status === 200 || response.status === 201) {
+                // Success status codes
+                console.log('API call successful');
+            } else if (!response.ok) {
+                console.error('API returned non-ok status:', response.status);
+                throw new Error(`Upload failed with status ${response.status}: ${result.message || result.error || 'Unknown error'}`);
             }
 
+            // Check if result indicates an error even with 200 status
+            if (result.error || result.message === 'No analysis data available') {
+                console.error('API returned error in response body:', result);
+                throw new Error(result.error || result.message || 'Analysis failed');
+            }
+
+            // Ensure we have actual data
             if (!result || (typeof result === 'object' && Object.keys(result).length === 0)) {
                 throw new Error('No analysis data received from server');
             }
 
+            // Log the actual structure of the result
+            console.log('=== API RESPONSE STRUCTURE ===');
+            console.log('Full result:', JSON.stringify(result, null, 2));
+            console.log('Result has data property:', !!result.data);
+            console.log('Result has analysis property:', !!result.analysis);
+            console.log('Result has results property:', !!result.results);
+
+            // Mobile debug alert
+            if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                alert(`API Response Debug:\nStatus: ${response.status}\nHas data: ${!!result}\nKeys: ${Object.keys(result || {}).join(', ')}\nFirst 100 chars: ${JSON.stringify(result).substring(0, 100)}`);
+            }
+
+            // The API might wrap the data in a property
+            const analysisData = result.data || result.analysis || result.results || result;
+
             // Store in state and sessionStorage as backup
-            setAnalysisData(result);
+            setAnalysisData(analysisData);
 
             // Store in sessionStorage as a backup for navigation
             try {
-                sessionStorage.setItem('analysisData', JSON.stringify(result));
+                sessionStorage.setItem('analysisData', JSON.stringify(analysisData));
+                sessionStorage.setItem('analysisTimestamp', Date.now().toString());
                 console.log('Analysis data stored in sessionStorage');
+
+                // Verify storage
+                const verifyStored = sessionStorage.getItem('analysisData');
+                console.log('Verified sessionStorage data exists:', !!verifyStored);
             } catch (storageError) {
                 console.warn('Failed to store in sessionStorage:', storageError);
             }
 
             setNavbarText('ANALYSIS');
 
-            // Ensure data is properly passed during navigation
-            console.log('Navigating with analysis data:', result);
+            // Log the exact data being passed
+            console.log('=== NAVIGATION DEBUG ===');
+            console.log('Result object:', analysisData);
+            console.log('Result type:', typeof analysisData);
+            console.log('Result keys:', Object.keys(analysisData || {}));
+            console.log('Navigating to /select with data');
 
-            // Small delay to ensure state is set before navigation
-            setTimeout(() => {
-                navigate('/select', {
-                    state: {
-                        analysisData: result,
-                        timestamp: Date.now() // Add timestamp to verify fresh data
-                    }
-                });
-            }, 100);
+            // Navigate immediately without delay
+            navigate('/select', {
+                state: {
+                    analysisData: analysisData,
+                    timestamp: Date.now(),
+                    debug: 'Camera navigation successful'
+                }
+            });
 
         } catch (err) {
             console.error('Upload error:', err);
