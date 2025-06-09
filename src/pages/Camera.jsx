@@ -180,14 +180,6 @@ const Camera = () => {
 
             const analysisData = result.data || result.analysis || result.results || result;
 
-            if (isMobile) {
-                alert(`API Response Debug:\nStatus: ${response.status}\nHas data: ${!!result}\nKeys: ${Object.keys(result || {}).join(', ')}\nFirst 100 chars: ${JSON.stringify(result).substring(0, 100)}`);
-            }
-
-            if (isMobile) {
-                alert(`Extracted Data Debug:\nHas analysis data: ${!!analysisData}\nData keys: ${Object.keys(analysisData || {}).slice(0, 5).join(', ')}\nHas race data: ${!!analysisData?.race}`);
-            }
-
             setAnalysisData(analysisData);
 
             try {
@@ -251,7 +243,7 @@ const Camera = () => {
 
                     <div
                         className={`absolute z-30 flex items-center ${
-                            isMobile ? 'bottom-[25%] left-4' : 'bottom-10 left-10'
+                            isMobile ? 'bottom-[11.2%] left-4' : 'bottom-10 left-10'
                         }`}
                     >
                         <button
@@ -274,7 +266,7 @@ const Camera = () => {
                         <div
                             className={`absolute z-20 flex gap-3 items-center ${
                                 isMobile
-                                    ? 'bottom-[25%] left-1/2 transform -translate-x-1/2 flex-col'
+                                    ? 'bottom-[10%] left-1/2 transform -translate-x-1/2 flex-col'
                                     : 'right-4 top-1/2 -translate-y-1/2'
                             }`}
                         >
@@ -294,7 +286,7 @@ const Camera = () => {
 
                     <div
                         className={`absolute z-20 px-4 ${
-                            isMobile ? 'bottom-[15%] w-full' : 'bottom-10 w-full'
+                            isMobile ? 'bottom-0 w-full' : 'bottom-10 w-full'
                         }`}
                     >
                         <div className="text-center space-y-5 max-w-4xl mx-auto">
@@ -377,7 +369,7 @@ const Camera = () => {
 
                     <div
                         className={`absolute z-20 px-4 ${
-                            isMobile ? 'bottom-[15%] w-full' : 'bottom-10 w-full'
+                            isMobile ? 'bottom-0 w-full' : 'bottom-10 w-full'
                         }`}
                     >
                         <div className="text-center space-y-4 max-w-4xl mx-auto">
@@ -421,7 +413,7 @@ const Camera = () => {
 
                     <div
                         className={`absolute z-30 flex items-center ${
-                            isMobile ? 'bottom-[25%] left-4' : 'bottom-10 left-10'
+                            isMobile ? 'bottom-[11.2%] left-4' : 'bottom-10 left-10'
                         }`}
                     >
                         <button
@@ -442,7 +434,7 @@ const Camera = () => {
 
                     <div
                         className={`absolute z-20 px-4 ${
-                            isMobile ? 'bottom-[15%] w-full' : 'bottom-10 w-full'
+                            isMobile ? 'bottom-0 w-full' : 'bottom-10 w-full'
                         }`}
                     >
                         <div className="text-center space-y-5 max-w-4xl mx-auto">
@@ -476,7 +468,7 @@ const Camera = () => {
 
                     <div
                         className={`absolute z-30 flex items-center ${
-                            isMobile ? 'bottom-[25%] right-4' : 'bottom-10 right-10'
+                            isMobile ? 'bottom-[11.2%] right-4' : 'bottom-10 right-10'
                         }`}
                     >
                         {!isMobile && (

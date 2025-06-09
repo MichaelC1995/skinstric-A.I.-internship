@@ -24,15 +24,10 @@ const Select = () => {
 
         if (!data) {
             const storedData = sessionStorage.getItem('analysisData');
-            const storedTimestamp = sessionStorage.getItem('analysisTimestamp');
 
             if (storedData) {
                 try {
                     data = JSON.parse(storedData);
-
-                    if (isMobile) {
-                        alert(`SessionStorage Data Found:\nKeys: ${Object.keys(data || {}).slice(0, 5).join(', ')}\nHas race: ${!!data?.race}`);
-                    }
                 } catch (e) {
                     console.error('Failed to parse stored analysis data:', e);
                     console.error('Raw stored data:', storedData);
@@ -41,18 +36,13 @@ const Select = () => {
         }
 
         if (!data || (typeof data === 'object' && Object.keys(data).length === 0)) {
-            if (isMobile) {
-                alert(`Data validation failed:\ndata exists: ${!!data}\ntype: ${typeof data}\nkeys length: ${data ? Object.keys(data).length : 0}`);
-            }
+
             setError('No analysis data available. Please take a photo first.');
             setIsLoading(false);
             setTimeout(() => {
                 navigate('/camera');
             }, 3000);
         } else {
-            if (isMobile) {
-                alert(`Data validation passed!\nSetting analysis data with keys: ${Object.keys(data).slice(0, 5).join(', ')}`);
-            }
             dataLoadedRef.current = true;
             setAnalysisData(data);
 
@@ -104,7 +94,7 @@ const Select = () => {
     }
 
     return (
-        <div className="fixed inset-0 bg-white overflow-hidden">
+        <div className="fixed inset-0 bg-white">
             <div className="absolute top-10 left-8 text-left mt-5 z-10">
                 <h1 className="text-base font-semibold leading-[24px] tracking-tight">A.I. ANALYSIS</h1>
                 <p className="text-sm mt-1 text-muted-foreground uppercase leading-[24px]">
@@ -144,11 +134,11 @@ const Select = () => {
                             }}
                         ></div>
                     </div>
-                    <div className="relative z-10 grid grid-cols-3 grid-rows-3 gap-0">
+                    <div className="relative z-10 grid grid-cols-3 grid-rows-3 gap-1 md:gap-0">
                         <div className="flex items-center justify-center col-start-2">
                             <Link to="/summary">
                                 <button
-                                    className="w-[153.88px] h-[153.88px] bg-gray-200 hover:bg-gray-300 transform rotate-45 flex items-center justify-center -m-5 cursor-pointer font-semibold leading-[24px] tracking-tight uppercase hover:scale-[1.05] transition-transform duration-300"
+                                    className="w-[140px] h-[140px] md:w-[155px] md:h-[155px] bg-gray-200 hover:bg-gray-300 transform rotate-45 flex items-center justify-center -m-5 cursor-pointer font-semibold leading-[24px] tracking-tight uppercase hover:scale-[1.05] transition-transform duration-300"
                                 >
                                     <span className="transform -rotate-45">Demographics</span>
                                 </button>
@@ -156,21 +146,21 @@ const Select = () => {
                         </div>
                         <div className="flex items-center justify-center row-start-2 col-start-1">
                             <button
-                                className="w-[153.88px] h-[153.88px] bg-gray-100 hover:bg-gray-300 transform rotate-45 flex items-center justify-center -m-5 font-semibold leading-[24px] tracking-tight uppercase cursor-not-allowed"
+                                className="w-[140px] h-[140px] md:w-[155px] md:h-[155px] bg-gray-100 hover:bg-gray-300 transform rotate-45 flex items-center justify-center -m-5 font-semibold leading-[24px] tracking-tight uppercase cursor-not-allowed"
                             >
                                 <span className="transform -rotate-45">Cosmetic Concerns</span>
                             </button>
                         </div>
                         <div className="flex items-center justify-center row-start-2 col-start-3">
                             <button
-                                className="w-[153.88px] h-[153.88px] bg-gray-100 hover:bg-gray-300 transform rotate-45 flex items-center justify-center -m-5 font-semibold leading-[24px] tracking-tight uppercase cursor-not-allowed"
+                                className="w-[140px] h-[140px] md:w-[155px] md:h-[155px] bg-gray-100 hover:bg-gray-300 transform rotate-45 flex items-center justify-center -m-5 font-semibold leading-[24px] tracking-tight uppercase cursor-not-allowed"
                             >
                                 <span className="transform -rotate-45">Skin Type Details</span>
                             </button>
                         </div>
                         <div className="flex items-center justify-center row-start-3 col-start-2">
                             <button
-                                className="w-[153.88px] h-[153.88px] bg-gray-100 hover:bg-gray-300 transform rotate-45 flex items-center justify-center -m-5 font-semibold leading-[24px] tracking-tight uppercase cursor-not-allowed"
+                                className="w-[140px] h-[140px] md:w-[155px] md:h-[155px] bg-gray-100 hover:bg-gray-300 transform rotate-45 flex items-center justify-center -m-5 font-semibold leading-[24px] tracking-tight uppercase cursor-not-allowed"
                             >
                                 <span className="transform -rotate-45">Weather</span>
                             </button>
