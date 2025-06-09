@@ -30,16 +30,11 @@ const CameraComponent = () => {
 
     useEffect(() => {
         if (showCameraView && stream && videoRef.current) {
-            console.log('Assigning stream to videoRef');
             videoRef.current.srcObject = stream;
-            videoRef.current.play()
-                .then(() => console.log('Video playback started successfully'))
-                .catch(err => {
-                    console.error('Video play failed:', err.name, err.message);
-                    setError(`Failed to play video: ${err.message}`);
-                });
+            videoRef.current.play().catch(err => {
+                setError(`Failed to play video: ${err.message}`);
+            });
         } else if (showCameraView && stream && !videoRef.current) {
-            console.error('videoRef.current is null after showCameraView');
             setError('Video element not found. Please try again.');
         }
     }, [showCameraView, stream]);
@@ -52,7 +47,6 @@ const CameraComponent = () => {
         if (videoRef.current) {
             videoRef.current.srcObject = null;
         }
-        console.log('Camera cleaned up');
     };
 
     const initializeCamera = async () => {
@@ -70,12 +64,10 @@ const CameraComponent = () => {
                 }),
                 new Promise(resolve => setTimeout(resolve, 500))
             ]);
-            console.log('Media stream obtained:', mediaStream);
             setStream(mediaStream);
             setShowCameraLoading(false);
             setShowCameraView(true);
         } catch (err) {
-            console.error('Camera access failed:', err.name, err.message);
             setShowCameraLoading(false);
             if (err.name === 'NotAllowedError') {
                 setError('Camera access denied. Please allow camera access and try again.');
@@ -96,7 +88,6 @@ const CameraComponent = () => {
             const context = canvas.getContext('2d');
 
             if (video.videoWidth === 0 || video.videoHeight === 0) {
-                console.error('Invalid video dimensions:', video.videoWidth, video.videoHeight);
                 setError('Camera feed not loaded. Please try again.');
                 return;
             }
@@ -107,11 +98,7 @@ const CameraComponent = () => {
                 context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
                 const base64Image = canvas.toDataURL('image/jpeg', 0.8);
-                console.log('Captured base64 image length:', base64Image.length);
-                console.log('Base64 image preview:', base64Image.substring(0, 100));
-
                 if (base64Image.length < 100) {
-                    console.error('Captured image is too small or invalid');
                     setError('Failed to capture valid image. Please try again.');
                     return;
                 }
@@ -126,7 +113,6 @@ const CameraComponent = () => {
                 setNavbarText('ANALYSIS');
             }, 500);
         } else {
-            console.error('Video or canvas ref is null:', { videoRef: !!videoRef.current, canvasRef: !!canvasRef.current });
             setError('Failed to capture image. Please try again.');
         }
     };
@@ -136,21 +122,15 @@ const CameraComponent = () => {
         setError(null);
         try {
             if (!base64String || base64String.length < 100) {
-                console.error('Invalid image data: empty or too small');
                 throw new Error('Invalid image data: empty or too small');
             }
-            console.log('Uploading image, length:', base64String.length);
-            console.log('Base64 image start:', base64String.substring(0, 100));
             const response = await fetch('https://us-central1-api-skinstric-ai.cloudfunctions.net/skinstricPhaseTwo', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ image: base64String }),
             });
             const result = await response.json();
-            console.log('API response:', result);
-            console.log('API response headers:', Object.fromEntries(response.headers.entries()));
             if (!response.ok) {
-                console.error('API error details:', result);
                 throw new Error(`Upload failed: ${result.message || 'No analysis data'}`);
             }
             setAnalysisData(result);
@@ -158,7 +138,6 @@ const CameraComponent = () => {
             alert('Image successfully analyzed!');
             navigate('/select', { state: { analysisData: result } });
         } catch (err) {
-            console.error('Upload error:', err.name, err.message);
             setError(`Failed to upload image: ${err.message}`);
             setShowPreview(true);
         } finally {
@@ -198,8 +177,6 @@ const CameraComponent = () => {
                             muted
                             className="w-full h-full object-cover z-[15]"
                             style={{ display: 'block', transform: 'scaleX(-1)' }}
-                            onError={(e) => console.error('Video element error:', e)}
-                            onLoadedMetadata={() => console.log('Video metadata loaded:', videoRef.current?.videoWidth, videoRef.current?.videoHeight)}
                         />
                     )}
 
