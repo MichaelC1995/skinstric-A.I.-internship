@@ -57,6 +57,9 @@ const Select = () => {
 
         if (!data || (typeof data === 'object' && Object.keys(data).length === 0)) {
             console.error('No analysis data available or data is empty');
+            if (isMobile) {
+                alert(`Data validation failed:\ndata exists: ${!!data}\ntype: ${typeof data}\nkeys length: ${data ? Object.keys(data).length : 0}`);
+            }
             setError('No analysis data available. Please take a photo first.');
             // Optionally redirect back to camera after a delay
             setTimeout(() => {
@@ -64,6 +67,9 @@ const Select = () => {
             }, 3000);
         } else {
             console.log('Analysis data successfully loaded:', data);
+            if (isMobile) {
+                alert(`Data validation passed!\nSetting analysis data with keys: ${Object.keys(data).slice(0, 5).join(', ')}`);
+            }
             setAnalysisData(data);
             // Don't clear sessionStorage immediately - keep it as backup
         }
