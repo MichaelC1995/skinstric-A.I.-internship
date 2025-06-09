@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { FaArrowLeft } from 'react-icons/fa';
+import { FaPlay } from 'react-icons/fa';
 import { useAnalysis } from '../context/AnalysisContext';
 import {ActionButton, DottedBorder} from "../components/ActionButton.jsx";
 
@@ -133,7 +133,7 @@ const Result = () => {
             <div className="absolute bottom-12 sm:bottom-8 w-full flex justify-between px-4 sm:px-9 opacity-100">
                 <Link to="/testing" className="group flex flex-row items-center justify-center">
                     <div className="relative w-12 h-12 flex items-center justify-center border border-[#1A1B1C] rotate-45 group-hover:scale-[0.92] transition-transform duration-300">
-                        <FaArrowLeft className="absolute rotate-[-45deg] scale-[0.9] group-hover:scale-[0.92] transition-transform duration-300" />
+                        <FaPlay className="absolute rotate-[135deg] scale-[0.9] group-hover:scale-[0.92] transition-transform duration-300" />
                     </div>
                     <span className="ml-4 text-sm font-semibold hidden sm:block">BACK</span>
                 </Link>

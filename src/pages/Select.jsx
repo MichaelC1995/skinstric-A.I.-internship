@@ -1,15 +1,9 @@
-import React, { useEffect } from 'react';
-import { FaArrowRight, FaArrowLeft } from 'react-icons/fa';
+import React from 'react';
+import { FaPlay } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-import { useAnalysis } from '../context/AnalysisContext';
+
 
 const Select = () => {
-    const { analysisResult } = useAnalysis();
-
-    useEffect(() => {
-        if (!analysisResult) {
-        }
-    }, [analysisResult]);
 
     return (
         <div className="fixed inset-0 bg-white overflow-hidden">
@@ -97,8 +91,8 @@ const Select = () => {
                             </div>
                             <div className="group hidden sm:flex flex-row relative justify-center items-center">
                                 <div className="w-12 h-12 hidden sm:flex justify-center border border-[#1A1B1C] rotate-45 scale-[0.85] group-hover:scale-[0.92] ease duration-300"></div>
-                                <FaArrowLeft
-                                    className="absolute left-[16px] bottom-[15px] scale-[0.9] hidden sm:block group-hover:scale-[0.92] ease duration-300"
+                                <FaPlay
+                                    className="absolute left-[16px] bottom-[15px] rotate-[180deg] scale-[0.9] hidden sm:block group-hover:scale-[0.92] ease duration-300"
                                 />
                                 <span className="text-sm font-semibold hidden sm:block ml-4">BACK</span>
                             </div>
@@ -112,7 +106,7 @@ const Select = () => {
                             <div className="group hidden sm:flex flex-row relative justify-center items-center">
                                 <span className="text-sm font-semibold hidden sm:block mr-4">GET SUMMARY</span>
                                 <div className="w-12 h-12 hidden sm:flex justify-center border border-[#1A1B1C] rotate-45 scale-[0.85] group-hover:scale-[0.92] ease duration-300"></div>
-                                <FaArrowRight
+                                <FaPlay
                                     className="absolute right-[16px] bottom-[15px] scale-[0.9] hidden sm:block group-hover:scale-[0.92] ease duration-300"
                                 />
                             </div>

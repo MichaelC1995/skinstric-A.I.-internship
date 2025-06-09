@@ -83,7 +83,7 @@ const Testing = () => {
     }, [handleTransition, reset]);
 
     return (
-        <div className="h-screen w-full flex flex-col items-center justify-center bg-white text-center overflow-hidden px-4 pt-20 pb-20">
+        <div className="flex flex-col items-center justify-center bg-white text-center overflow-hidden px-4 pt-20 pb-20" style={{ height: `calc(100vh - 60px)` }}>
             <div className="absolute top-16 left-4 sm:left-9 text-left">
                 <p className="font-bold text-[12px]">TO START ANALYSIS</p>
             </div>
