@@ -252,6 +252,11 @@ const CameraComponent = () => {
             // The API might wrap the data in a property
             const analysisData = result.data || result.analysis || result.results || result;
 
+            // Second debug alert to confirm data extraction
+            if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                alert(`Extracted Data Debug:\nHas analysis data: ${!!analysisData}\nData keys: ${Object.keys(analysisData || {}).slice(0, 5).join(', ')}\nHas race data: ${!!analysisData?.race}`);
+            }
+
             // Store in state and sessionStorage as backup
             setAnalysisData(analysisData);
 
