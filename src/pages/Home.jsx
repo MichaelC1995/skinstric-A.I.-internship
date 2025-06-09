@@ -67,7 +67,7 @@ const Home = () => {
                     </Link>
                 </div>
 
-                <div className="hidden sm:block fixed left-6 font-normal text-sm text-[#1A1B1C] space-y-3 uppercase z-30"
+                <div className="hidden sm:block fixed left-12 font-normal text-sm text-[#1A1B1C] space-y-3 uppercase z-30"
                      style={{
                          bottom: '10px'
                      }}>
