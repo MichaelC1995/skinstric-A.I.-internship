@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FaPlay } from 'react-icons/fa';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
@@ -7,8 +7,15 @@ const Select = () => {
     const navigate = useNavigate();
     const [analysisData, setAnalysisData] = useState(null);
     const [error, setError] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const dataLoadedRef = useRef(false);
 
     useEffect(() => {
+        // Prevent multiple executions
+        if (dataLoadedRef.current) {
+            return;
+        }
+
         console.log('=== SELECT COMPONENT DEBUG ===');
         console.log('Location state:', location.state);
         console.log('Location state type:', typeof location.state);
@@ -61,6 +68,7 @@ const Select = () => {
                 alert(`Data validation failed:\ndata exists: ${!!data}\ntype: ${typeof data}\nkeys length: ${data ? Object.keys(data).length : 0}`);
             }
             setError('No analysis data available. Please take a photo first.');
+            setIsLoading(false);
             // Optionally redirect back to camera after a delay
             setTimeout(() => {
                 navigate('/camera');
@@ -70,13 +78,28 @@ const Select = () => {
             if (isMobile) {
                 alert(`Data validation passed!\nSetting analysis data with keys: ${Object.keys(data).slice(0, 5).join(', ')}`);
             }
+            dataLoadedRef.current = true;
             setAnalysisData(data);
+            setIsLoading(false);
+            setError(null);
             // Don't clear sessionStorage immediately - keep it as backup
         }
-    }, [location.state, navigate]);
+    }, []); // Remove dependencies to run only once
+
+    // If still loading, show loading state
+    if (isLoading) {
+        return (
+            <div className="fixed inset-0 bg-white flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading analysis data...</p>
+                </div>
+            </div>
+        );
+    }
 
     // If there's an error, show error message
-    if (error) {
+    if (error && !analysisData) {
         return (
             <div className="fixed inset-0 bg-white flex items-center justify-center">
                 <div className="text-center px-4">
@@ -88,13 +111,19 @@ const Select = () => {
         );
     }
 
-    // If no analysis data yet, show loading
+    // If no analysis data at this point, something went wrong
     if (!analysisData) {
         return (
             <div className="fixed inset-0 bg-white flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading analysis data...</p>
+                <div className="text-center px-4">
+                    <h2 className="text-xl font-semibold mb-4">Error</h2>
+                    <p className="text-gray-600 mb-4">Failed to load analysis data</p>
+                    <button
+                        onClick={() => navigate('/camera')}
+                        className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                    >
+                        Back to Camera
+                    </button>
                 </div>
             </div>
         );
