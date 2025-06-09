@@ -33,9 +33,11 @@ const CameraComponent = () => {
         if (showCameraView && stream && videoRef.current) {
             videoRef.current.srcObject = stream;
             videoRef.current.play().catch(err => {
+                console.error('Video play failed:', err.message);
                 setError(`Failed to play video: ${err.message}`);
             });
         } else if (showCameraView && stream && !videoRef.current) {
+            console.error('videoRef.current is null');
             setError('Video element not found. Please try again.');
         }
     }, [showCameraView, stream]);
@@ -57,18 +59,20 @@ const CameraComponent = () => {
             const [mediaStream] = await Promise.all([
                 navigator.mediaDevices.getUserMedia({
                     video: {
-                        width: { min: 320, ideal: 640, max: 1280 },
-                        height: { min: 240, ideal: 480, max: 720 },
+                        width: 640,
+                        height: 480,
                         facingMode: facingMode
                     },
                     audio: false
                 }),
                 new Promise(resolve => setTimeout(resolve, 500))
             ]);
+            console.log('Media stream obtained, tracks:', mediaStream.getVideoTracks().length);
             setStream(mediaStream);
             setShowCameraLoading(false);
             setShowCameraView(true);
         } catch (err) {
+            console.error('Camera access failed:', err.name, err.message);
             setShowCameraLoading(false);
             if (err.name === 'NotAllowedError') {
                 setError('Camera access denied. Please allow camera access in your browser settings and try again.');
@@ -95,25 +99,22 @@ const CameraComponent = () => {
             const context = canvas.getContext('2d');
 
             if (video.videoWidth === 0 || video.videoHeight === 0) {
+                console.error('Invalid video dimensions:', video.videoWidth, video.videoHeight);
                 setError('Camera feed not loaded. Please try again.');
                 return;
             }
 
             setTimeout(() => {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-
-                // Handle orientation for mobile devices
-                const isLandscape = window.innerWidth > window.innerHeight;
-                if (isLandscape && facingMode === 'user') {
-                    context.translate(canvas.width, 0);
-                    context.scale(-1, 1);
-                }
-
+                canvas.width = 640;
+                canvas.height = 480;
                 context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
                 const base64Image = canvas.toDataURL('image/jpeg', 0.8);
-                if (base64Image.length < 100) {
+                console.log('Captured base64 image length:', base64Image.length);
+                console.log('Base64 image prefix:', base64Image.substring(0, 30));
+
+                if (base64Image.length < 1000 || !base64Image.startsWith('data:image/jpeg;base64,')) {
+                    console.error('Invalid base64 image: length or format incorrect');
                     setError('Failed to capture valid image. Please try again.');
                     return;
                 }
@@ -128,6 +129,7 @@ const CameraComponent = () => {
                 setNavbarText('ANALYSIS');
             }, 500);
         } else {
+            console.error('Video or canvas ref is null:', { videoRef: !!videoRef.current, canvasRef: !!canvasRef.current });
             setError('Failed to capture image. Please try again.');
         }
     };
@@ -136,7 +138,8 @@ const CameraComponent = () => {
         setIsUploading(true);
         setError(null);
         try {
-            if (!base64String || base64String.length < 100) {
+            if (!base64String || base64String.length < 1000 || !base64String.startsWith('data:image/jpeg;base64,')) {
+                console.error('Invalid image data: empty or incorrect format');
                 throw new Error('Invalid image data: empty or too small');
             }
             const response = await fetch('https://us-central1-api-skinstric-ai.cloudfunctions.net/skinstricPhaseTwo', {
@@ -145,7 +148,10 @@ const CameraComponent = () => {
                 body: JSON.stringify({ image: base64String }),
             });
             const result = await response.json();
+            console.log('API response:', result);
+            console.log('API status:', response.status);
             if (!response.ok) {
+                console.error('API error:', result.message || 'No analysis data');
                 throw new Error(`Upload failed: ${result.message || 'No analysis data'}`);
             }
             setAnalysisData(result);
@@ -153,6 +159,7 @@ const CameraComponent = () => {
             alert('Image successfully analyzed!');
             navigate('/select', { state: { analysisData: result } });
         } catch (err) {
+            console.error('Upload error:', err.message);
             setError(`Failed to upload image: ${err.message}`);
             setShowPreview(true);
         } finally {
@@ -191,7 +198,7 @@ const CameraComponent = () => {
                             playsInline
                             muted
                             className="w-full h-full object-cover z-[15]"
-                            style={{ display: 'block', transform: facingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)' }}
+                            style={{ display: 'block' }}
                         />
                     )}
 
