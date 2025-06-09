@@ -13,41 +13,22 @@ const Select = () => {
     const dataLoadedRef = useRef(false);
 
     useEffect(() => {
-        // Prevent multiple executions
         if (dataLoadedRef.current) {
             return;
         }
 
-        console.log('=== SELECT COMPONENT DEBUG ===');
-        console.log('Location state:', location.state);
-        console.log('Location state type:', typeof location.state);
-        console.log('Has analysisData in state:', !!location.state?.analysisData);
-
-        // Mobile debug alert
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        if (isMobile) {
-            alert(`Select Component Debug:\nHas location state: ${!!location.state}\nHas analysisData: ${!!location.state?.analysisData}\nSessionStorage check: ${!!sessionStorage.getItem('analysisData')}`);
-        }
 
-        // First try to get data from navigation state
         let data = location.state?.analysisData;
 
-        // If not found, try sessionStorage as backup
+
         if (!data) {
-            console.log('No data in location state, checking sessionStorage...');
             const storedData = sessionStorage.getItem('analysisData');
             const storedTimestamp = sessionStorage.getItem('analysisTimestamp');
-
-            console.log('SessionStorage has data:', !!storedData);
-            console.log('Data timestamp:', storedTimestamp);
 
             if (storedData) {
                 try {
                     data = JSON.parse(storedData);
-                    console.log('Retrieved analysis data from sessionStorage');
-                    console.log('Parsed data:', data);
-                    console.log('Data type:', typeof data);
-                    console.log('Data keys:', Object.keys(data || {}));
 
                     if (isMobile) {
                         alert(`SessionStorage Data Found:\nKeys: ${Object.keys(data || {}).slice(0, 5).join(', ')}\nHas race: ${!!data?.race}`);
@@ -57,43 +38,31 @@ const Select = () => {
                     console.error('Raw stored data:', storedData);
                 }
             }
-        } else {
-            console.log('Found data in location state');
-            console.log('Data:', data);
-            console.log('Data type:', typeof data);
-            console.log('Data keys:', Object.keys(data || {}));
         }
 
         if (!data || (typeof data === 'object' && Object.keys(data).length === 0)) {
-            console.error('No analysis data available or data is empty');
             if (isMobile) {
                 alert(`Data validation failed:\ndata exists: ${!!data}\ntype: ${typeof data}\nkeys length: ${data ? Object.keys(data).length : 0}`);
             }
             setError('No analysis data available. Please take a photo first.');
             setIsLoading(false);
-            // Optionally redirect back to camera after a delay
             setTimeout(() => {
                 navigate('/camera');
             }, 3000);
         } else {
-            console.log('Analysis data successfully loaded:', data);
             if (isMobile) {
                 alert(`Data validation passed!\nSetting analysis data with keys: ${Object.keys(data).slice(0, 5).join(', ')}`);
             }
             dataLoadedRef.current = true;
             setAnalysisData(data);
 
-            // Set the data in the context for the Summary component
-            // The Summary component expects the data in this format: { data: analysisData }
             setContextAnalysisData({ data: data });
 
             setIsLoading(false);
             setError(null);
-            // Don't clear sessionStorage immediately - keep it as backup
         }
-    }, []); // Remove dependencies to run only once
+    }, []);
 
-    // If still loading, show loading state
     if (isLoading) {
         return (
             <div className="fixed inset-0 bg-white flex items-center justify-center">
@@ -105,7 +74,6 @@ const Select = () => {
         );
     }
 
-    // If there's an error, show error message
     if (error && !analysisData) {
         return (
             <div className="fixed inset-0 bg-white flex items-center justify-center">
@@ -118,7 +86,6 @@ const Select = () => {
         );
     }
 
-    // If no analysis data at this point, something went wrong
     if (!analysisData) {
         return (
             <div className="fixed inset-0 bg-white flex items-center justify-center">
@@ -143,13 +110,6 @@ const Select = () => {
                 <p className="text-sm mt-1 text-muted-foreground uppercase leading-[24px]">
                     A.I. has estimated the following.<br />Fix estimated information if needed.
                 </p>
-                {/* Debug info - remove in production */}
-                {process.env.NODE_ENV === 'development' && (
-                    <div className="mt-2 text-xs text-gray-500">
-                        <p>Data received: {analysisData ? 'Yes' : 'No'}</p>
-                        {analysisData && <p>Keys: {Object.keys(analysisData).join(', ')}</p>}
-                    </div>
-                )}
             </div>
 
             <div className="flex flex-col items-center justify-center h-full">

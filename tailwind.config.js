@@ -5,6 +5,16 @@ module.exports = {
     ],
     theme: {
         extend: {
+            borderWidth: {
+                '0.8': '0.8px',
+                '1.6': '1.6px',
+            },
+            fontSize: {
+                '48px': '48px',
+                '12.8px': '12.8px',
+                '9.6px': '9.6px',
+                '11.2px': '11.2px',
+            },
             scale: {
                 '130': '1.3',
             },
@@ -28,8 +38,8 @@ module.exports = {
                     },
                 },
                 dotBounce: {
-                    '0%, 80%, 100%': { transform: 'translateY(0)' },
-                    '40%': { transform: 'translateY(-6px)' },
+                    '0%, 80%, 100%': {transform: 'translateY(0)'},
+                    '40%': {transform: 'translateY(-6px)'},
                 },
             },
         },

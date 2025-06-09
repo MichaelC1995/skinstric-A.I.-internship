@@ -6,7 +6,7 @@ const ActionButton = ({ iconSrc, altText, text, onClick, textPosition }) => {
     useEffect(() => {
         const updateBorderSizes = () => {
             if (window.innerWidth < 768) {
-                setBorderSizes([300 * 0.7, 270 * 0.7, 240 * 0.7]);
+                setBorderSizes([300 * 0.6, 270 * 0.6, 240 * 0.6]);
             } else {
                 setBorderSizes([300, 270, 240]);
             }
