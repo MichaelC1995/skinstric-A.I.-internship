@@ -106,7 +106,7 @@ const CameraComponent = () => {
 
             const base64Image = canvas.toDataURL('image/jpeg', 0.8);
             console.log('Captured base64 image length:', base64Image.length);
-            console.log('Base64 image preview:', base64Image.substring(0, 100)); // Log start of base64 for inspection
+            console.log('Base64 image preview:', base64Image.substring(0, 100));
 
             if (stream) {
                 stream.getTracks().forEach(track => track.enabled = false);
@@ -132,7 +132,7 @@ const CameraComponent = () => {
         setIsUploading(true);
         setError(null);
         try {
-            if (!base64String || base64Image.length < 100) {
+            if (!base64String || base64String.length < 100) {
                 console.error('Invalid image data: empty or too small');
                 throw new Error('Invalid image data: empty or too small');
             }
@@ -155,7 +155,7 @@ const CameraComponent = () => {
         } catch (err) {
             console.error('Upload error:', err.name, err.message);
             setError(`Failed to upload image: ${err.message}`);
-            setShowPreview(true); // Show preview again to allow retry
+            setShowPreview(true); // Return to preview for retry
         } finally {
             setIsUploading(false);
         }
