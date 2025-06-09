@@ -14,7 +14,7 @@ const CameraComponent = () => {
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState(null);
     const [analysisData, setAnalysisData] = useState(null);
-    const [cameraStarted, setCameraStarted] = useState(false); // Added for user interaction
+    const [cameraStarted, setCameraStarted] = useState(false);
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
     const navigate = useNavigate();
@@ -24,15 +24,26 @@ const CameraComponent = () => {
         return () => {
             setIsCameraViewActive(false);
             setNavbarText('');
+            cleanupCamera();
         };
     }, [setIsCameraViewActive, setNavbarText]);
 
+    // Assign stream to videoRef when showCameraView and stream are ready
     useEffect(() => {
-        // Initialize camera only after user interaction (via startCamera)
-        return () => {
-            cleanupCamera();
-        };
-    }, []);
+        if (showCameraView && stream && videoRef.current) {
+            console.log('Assigning stream to videoRef');
+            videoRef.current.srcObject = stream;
+            videoRef.current.play()
+                .then(() => console.log('Video playback started successfully'))
+                .catch(err => {
+                    console.error('Video play failed:', err.name, err.message);
+                    setError(`Failed to play video: ${err.message}`);
+                });
+        } else if (showCameraView && stream && !videoRef.current) {
+            console.error('videoRef.current is null after showCameraView');
+            setError('Video element not found. Please try again.');
+        }
+    }, [showCameraView, stream]);
 
     const cleanupCamera = () => {
         if (stream) {
@@ -61,16 +72,6 @@ const CameraComponent = () => {
             setStream(mediaStream);
             setShowCameraLoading(false);
             setShowCameraView(true);
-            if (videoRef.current) {
-                console.log('Assigning stream to videoRef');
-                videoRef.current.srcObject = mediaStream;
-                videoRef.current.play()
-                    .then(() => console.log('Video playback started successfully'))
-                    .catch(err => console.error('Video play failed:', err.name, err.message));
-            } else {
-                console.error('videoRef.current is null');
-                setError('Video element not found. Please try again.');
-            }
         } catch (err) {
             console.error('Camera access failed:', err.name, err.message);
             setShowCameraLoading(false);
@@ -166,7 +167,7 @@ const CameraComponent = () => {
         setShowCameraView(false);
         setShowPreview(false);
         setShowCameraLoading(false);
-        setCameraStarted(false); // Reset camera start
+        setCameraStarted(false);
         setNavbarText('');
         navigate('/result');
     };
@@ -193,7 +194,7 @@ const CameraComponent = () => {
                             playsInline
                             muted
                             className="w-full h-full object-cover z-[15]"
-                            style={{ display: 'block', transform: 'scaleX(-1)' }} // Mirror for front-facing camera
+                            style={{ display: 'block', transform: 'scaleX(-1)' }}
                             onError={(e) => console.error('Video element error:', e)}
                             onLoadedMetadata={() => console.log('Video metadata loaded:', videoRef.current?.videoWidth, videoRef.current?.videoHeight)}
                         />
@@ -327,7 +328,7 @@ const CameraComponent = () => {
                     </div>
                     <div className="absolute inset-0 flex items-center justify-center z-50">
                         <img
-                            src="/camera.jpg" // Ensure this is accessible at https://your-app.vercel.app/camera.jpg
+                            src="/camera.jpg"
                             alt="Camera Icon"
                             className="w-20 h-20 md:w-24 md:h-24 object-contain"
                         />
@@ -406,7 +407,7 @@ const CameraComponent = () => {
                             <button
                                 onClick={() => {
                                     setError(null);
-                                    setCameraStarted(false); // Reset to show Start Camera button
+                                    setCameraStarted(false);
                                 }}
                                 className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
                             >
