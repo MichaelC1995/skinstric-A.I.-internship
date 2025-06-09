@@ -79,18 +79,24 @@ const CameraComponent = () => {
         setShowCameraLoading(true);
         setError(null);
         try {
+            // Check if mobile device
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+            const constraints = {
+                video: {
+                    facingMode: 'user',
+                    width: { ideal: isMobile ? 1920 : 1280 },
+                    height: { ideal: isMobile ? 1080 : 720 }
+                },
+                audio: false
+            };
+
             const [mediaStream] = await Promise.all([
-                navigator.mediaDevices.getUserMedia({
-                    video: {
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 },
-                        facingMode: 'user'
-                    },
-                    audio: false
-                }),
+                navigator.mediaDevices.getUserMedia(constraints),
                 new Promise(resolve => setTimeout(resolve, 500))
             ]);
             console.log('Media stream obtained:', mediaStream);
+            console.log('Device type:', isMobile ? 'Mobile' : 'Desktop');
             setStream(mediaStream);
             setShowCameraLoading(false);
             setShowCameraView(true);
@@ -121,21 +127,32 @@ const CameraComponent = () => {
                 return;
             }
 
-            setTimeout(() => {
+            // Use requestAnimationFrame to ensure video frame is ready
+            requestAnimationFrame(() => {
+                // Set canvas dimensions to match video
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
+
+                // Clear canvas first
+                context.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Draw the video frame to canvas
                 context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-                const base64Image = canvas.toDataURL('image/jpeg', 0.8);
+                // Convert to base64 with quality setting
+                const base64Image = canvas.toDataURL('image/jpeg', 0.95);
                 console.log('Captured base64 image length:', base64Image.length);
                 console.log('Base64 image preview:', base64Image.substring(0, 100));
+                console.log('Canvas dimensions:', canvas.width, 'x', canvas.height);
 
-                if (base64Image.length < 100) {
-                    console.error('Captured image is too small or invalid');
+                // Validate the image
+                if (!base64Image || base64Image === 'data:,' || base64Image.length < 100) {
+                    console.error('Captured image is invalid');
                     setError('Failed to capture valid image. Please try again.');
                     return;
                 }
 
+                // Pause the video stream (don't stop it completely)
                 if (stream) {
                     stream.getTracks().forEach(track => track.enabled = false);
                 }
@@ -144,7 +161,7 @@ const CameraComponent = () => {
                 setShowCameraView(false);
                 setShowPreview(true);
                 setNavbarText('ANALYSIS');
-            }, 500);
+            });
         } else {
             console.error('Video or canvas ref is null:', { videoRef: !!videoRef.current, canvasRef: !!canvasRef.current });
             setError('Failed to capture image. Please try again.');
@@ -155,30 +172,66 @@ const CameraComponent = () => {
         setIsUploading(true);
         setError(null);
         try {
-            if (!base64String || base64String.length < 100) {
-                console.error('Invalid image data: empty or too small');
-                throw new Error('Invalid image data: empty or too small');
+            // More thorough validation
+            if (!base64String || typeof base64String !== 'string') {
+                throw new Error('Invalid image data: not a string');
             }
-            console.log('Uploading image, length:', base64String.length);
-            console.log('Base64 image start:', base64String.substring(0, 100));
+
+            // Check if it's a valid data URL
+            if (!base64String.startsWith('data:image/')) {
+                throw new Error('Invalid image data: not a valid image data URL');
+            }
+
+            // Extract just the base64 part (remove data:image/jpeg;base64, prefix)
+            const base64Data = base64String.split(',')[1];
+            if (!base64Data || base64Data.length < 100) {
+                throw new Error('Invalid image data: base64 content too small');
+            }
+
+            console.log('Uploading image...');
+            console.log('Base64 data length:', base64Data.length);
+            console.log('Full string length:', base64String.length);
+            console.log('Image format:', base64String.substring(0, 30));
+
             const response = await fetch('https://us-central1-api-skinstric-ai.cloudfunctions.net/skinstricPhaseTwo', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
                 body: JSON.stringify({ image: base64String }),
             });
-            const result = await response.json();
-            console.log('API response:', result);
-            console.log('API response headers:', Object.fromEntries(response.headers.entries()));
+
+            const responseText = await response.text();
+            console.log('Raw API response:', responseText);
+
+            let result;
+            try {
+                result = JSON.parse(responseText);
+            } catch (parseError) {
+                console.error('Failed to parse response as JSON:', parseError);
+                throw new Error(`Invalid response from server: ${responseText.substring(0, 100)}`);
+            }
+
+            console.log('Parsed API response:', result);
+            console.log('Response status:', response.status);
+
             if (!response.ok) {
                 console.error('API error details:', result);
-                throw new Error(`Upload failed: ${result.message || 'No analysis data'}`);
+                throw new Error(`Upload failed: ${result.message || result.error || 'Unknown error'}`);
             }
+
+            if (!result || (typeof result === 'object' && Object.keys(result).length === 0)) {
+                throw new Error('No analysis data received from server');
+            }
+
             setAnalysisData(result);
             setNavbarText('ANALYSIS');
             alert('Image successfully analyzed!');
             navigate('/select', { state: { analysisData: result } });
         } catch (err) {
-            console.error('Upload error:', err.name, err.message);
+            console.error('Upload error:', err);
+            console.error('Error stack:', err.stack);
             setError(`Failed to upload image: ${err.message}`);
             setShowPreview(true); // Return to preview for retry
         } finally {
