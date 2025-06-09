@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaArrowLeft, FaArrowRight, FaCamera } from 'react-icons/fa';
+import { FaArrowLeft, FaArrowRight, FaCamera, FaSyncAlt } from 'react-icons/fa';
 import { MdRadioButtonUnchecked } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
 import { useCamera } from '../context/CameraContext';
@@ -14,6 +14,7 @@ const CameraComponent = () => {
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState(null);
     const [analysisData, setAnalysisData] = useState(null);
+    const [facingMode, setFacingMode] = useState('user'); // 'user' or 'environment'
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
     const navigate = useNavigate();
@@ -56,9 +57,9 @@ const CameraComponent = () => {
             const [mediaStream] = await Promise.all([
                 navigator.mediaDevices.getUserMedia({
                     video: {
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 },
-                        facingMode: 'user'
+                        width: { min: 320, ideal: 640, max: 1280 },
+                        height: { min: 240, ideal: 480, max: 720 },
+                        facingMode: facingMode
                     },
                     audio: false
                 }),
@@ -70,15 +71,21 @@ const CameraComponent = () => {
         } catch (err) {
             setShowCameraLoading(false);
             if (err.name === 'NotAllowedError') {
-                setError('Camera access denied. Please allow camera access and try again.');
+                setError('Camera access denied. Please allow camera access in your browser settings and try again.');
             } else if (err.name === 'NotFoundError') {
-                setError('No camera found. Please connect a camera.');
+                setError('No camera found. Please ensure a camera is available.');
             } else if (err.name === 'NotSupportedError') {
                 setError('Camera not supported by this browser.');
             } else {
                 setError(`Failed to access camera: ${err.message}`);
             }
         }
+    };
+
+    const switchCamera = () => {
+        cleanupCamera();
+        setFacingMode(prev => prev === 'user' ? 'environment' : 'user');
+        initializeCamera();
     };
 
     const handleCameraCapture = () => {
@@ -95,6 +102,14 @@ const CameraComponent = () => {
             setTimeout(() => {
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
+
+                // Handle orientation for mobile devices
+                const isLandscape = window.innerWidth > window.innerHeight;
+                if (isLandscape && facingMode === 'user') {
+                    context.translate(canvas.width, 0);
+                    context.scale(-1, 1);
+                }
+
                 context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
                 const base64Image = canvas.toDataURL('image/jpeg', 0.8);
@@ -176,7 +191,7 @@ const CameraComponent = () => {
                             playsInline
                             muted
                             className="w-full h-full object-cover z-[15]"
-                            style={{ display: 'block', transform: 'scaleX(-1)' }}
+                            style={{ display: 'block', transform: facingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)' }}
                         />
                     )}
 
@@ -191,13 +206,20 @@ const CameraComponent = () => {
                     </div>
 
                     {showCameraView && (
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 z-20 flex items-center">
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 z-20 flex items-center space-x-2">
                             <span className="text-white text-sm font-semibold mr-4">TAKE A PICTURE</span>
                             <button
                                 onClick={handleCameraCapture}
                                 className="w-16 h-16 bg-white rounded-full border-4 border-gray-200 hover:scale-110 flex items-center justify-center"
                             >
                                 <FaCamera className="w-8 h-8 text-black" />
+                            </button>
+                            <button
+                                onClick={switchCamera}
+                                aria-label="Switch Camera"
+                                className="w-12 h-12 bg-white rounded-full border-2 border-gray-200 hover:scale-110 flex items-center justify-center"
+                            >
+                                <FaSyncAlt className="w-6 h-6 text-black" />
                             </button>
                         </div>
                     )}
