@@ -52,32 +52,26 @@ const CameraComponent = () => {
     const initializeCamera = async () => {
         setShowCameraLoading(true);
         setError(null);
-
         try {
             const mediaStream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 },
-                    facingMode: 'user'
-                },
+                video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
                 audio: false
             });
-
             setStream(mediaStream);
-
-            loadingTimeoutRef.current = setTimeout(() => {
-                setShowCameraLoading(false);
-                setShowCameraView(true);
-
-                if (videoRef.current) {
-                    videoRef.current.srcObject = mediaStream;
-                    videoRef.current.play().catch(err => console.warn('Video play failed:', err));
-                }
-            }, 2000);
-        } catch (err) {
-            console.error('Camera access failed:', err);
             setShowCameraLoading(false);
-
+            setShowCameraView(true);
+            if (videoRef.current) {
+                console.log('Assigning stream to video element:', mediaStream);
+                videoRef.current.srcObject = mediaStream;
+                videoRef.current.play()
+                    .then(() => console.log('Video playback started successfully'))
+                    .catch(err => console.error('Video play failed:', err.name, err.message));
+            } else {
+                console.error('videoRef.current is null');
+            }
+        } catch (err) {
+            console.error('Camera access failed:', err.name, err.message);
+            setShowCameraLoading(false);
             if (err.name === 'NotAllowedError') {
                 setError('Camera access denied. Please allow camera access and try again.');
             } else if (err.name === 'NotFoundError') {
@@ -89,6 +83,18 @@ const CameraComponent = () => {
             }
         }
     };
+
+// In the return statement:
+    {showCameraView && (
+        <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="w-full h-full object-cover z-[15]"
+            style={{ transform: 'scaleX(-1)', display: 'block' }}
+        />
+    )}
 
     const handleCameraCapture = () => {
         if (videoRef.current && canvasRef.current) {
