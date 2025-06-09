@@ -101,6 +101,7 @@ const Result = () => {
                         text="ALLOW A.I.<br />TO SCAN YOUR FACE"
                         onClick={handleCameraClick}
                         textPosition="top-[-65px] right-[-150px]"
+                        textAlign="text-left"
                     />
                 </div>
                 <div className={`flex flex-col items-center transition-opacity duration-300 ${showCameraModal ? 'opacity-30' : 'opacity-100'}`}>
@@ -110,6 +111,7 @@ const Result = () => {
                         text="ALLOW A.I.<br />ACCESS GALLERY"
                         onClick={() => document.getElementById('fileInput')?.click()}
                         textPosition="bottom-[-65px] left-[-150px]"
+                        textAlign="text-right"
                     />
                     <div className="block md:hidden mt-4">
                         <p className="text-[12px] text-center font-normal leading-[20px]">

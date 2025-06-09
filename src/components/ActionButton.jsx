@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const ActionButton = ({ iconSrc, altText, text, onClick, textPosition }) => {
+const ActionButton = ({ iconSrc, altText, text, onClick, textPosition, textAlign = "text-center" }) => {
     const [borderSizes, setBorderSizes] = useState([300, 270, 240]);
 
     useEffect(() => {
@@ -29,7 +29,7 @@ const ActionButton = ({ iconSrc, altText, text, onClick, textPosition }) => {
                     onClick={onClick}
                 />
                 <div className={`hidden md:block absolute ${textPosition}`}>
-                    <p className="text-[14px] font-normal leading-[20px] min-w-[120px]">
+                    <p className={`text-[14px] font-normal leading-[20px] min-w-[120px] ${textAlign}`}>
                         {text.split("<br />").map((line, i) => (
                             <span key={i}>
                                 {line}

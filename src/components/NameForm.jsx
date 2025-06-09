@@ -9,12 +9,12 @@ const NameForm = ({ onSubmit, error, register }) => (
         <div className="flex flex-col items-center opacity-100 max-w-[420px]">
             <p
                 id="name-instruction"
-                className="text-[10px] sm:text-xs text-gray-400 tracking-wider uppercase mb-1 pointer-events-none"
+                className="text-[16px] text-gray-400 tracking-wider uppercase mb-1 pointer-events-none"
             >
                 CLICK TO TYPE
             </p>
             <input
-                className="md:text-5xl text-3xl font-normal sm:scale-100 scale-[0.8] text-center bg-transparent border-b border-black focus:outline-none appearance-none w-[98vw] max-w-[448px] min-w-[280px] pt-1 px-2 tracking-[-0.05em] leading-[50px] sm:leading-[64px] text-[#1A1B1C] placeholder:text-black placeholder:opacity-100 sm:placeholder:text-[48px]"
+                className="text-5xl font-normal sm:scale-100 scale-[0.8] text-center bg-transparent border-b border-black focus:outline-none appearance-none w-[98vw] max-w-[448px] min-w-[280px] pt-1 px-2 tracking-[-0.05em] leading-[50px] sm:leading-[64px] text-[#1A1B1C] placeholder:text-black placeholder:opacity-100 sm:placeholder:text-[48px]"
                 placeholder="Introduce Yourself"
                 autoComplete="off"
                 type="text"

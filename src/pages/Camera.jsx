@@ -186,7 +186,7 @@ const Camera = () => {
                 sessionStorage.setItem('analysisData', JSON.stringify(analysisData));
                 sessionStorage.setItem('analysisTimestamp', Date.now().toString());
             } catch (storageError) {
-                // Silently handle storage errors
+
             }
 
             setNavbarText('ANALYSIS');

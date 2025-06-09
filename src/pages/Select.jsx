@@ -30,13 +30,14 @@ const Select = () => {
                     data = JSON.parse(storedData);
                 } catch (e) {
                     console.error('Failed to parse stored analysis data:', e);
-                    console.error('Raw stored data:', storedData);
+                    if (process.env.NODE_ENV === 'development') {
+                        console.error('Raw stored data:', storedData);
+                    }
                 }
             }
         }
 
         if (!data || (typeof data === 'object' && Object.keys(data).length === 0)) {
-
             setError('No analysis data available. Please take a photo first.');
             setIsLoading(false);
             setTimeout(() => {
