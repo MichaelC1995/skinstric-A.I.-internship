@@ -225,10 +225,32 @@ const CameraComponent = () => {
                 throw new Error('No analysis data received from server');
             }
 
+            // Store in state and sessionStorage as backup
             setAnalysisData(result);
+
+            // Store in sessionStorage as a backup for navigation
+            try {
+                sessionStorage.setItem('analysisData', JSON.stringify(result));
+                console.log('Analysis data stored in sessionStorage');
+            } catch (storageError) {
+                console.warn('Failed to store in sessionStorage:', storageError);
+            }
+
             setNavbarText('ANALYSIS');
-            alert('Image successfully analyzed!');
-            navigate('/select', { state: { analysisData: result } });
+
+            // Ensure data is properly passed during navigation
+            console.log('Navigating with analysis data:', result);
+
+            // Small delay to ensure state is set before navigation
+            setTimeout(() => {
+                navigate('/select', {
+                    state: {
+                        analysisData: result,
+                        timestamp: Date.now() // Add timestamp to verify fresh data
+                    }
+                });
+            }, 100);
+
         } catch (err) {
             console.error('Upload error:', err);
             console.error('Error stack:', err.stack);

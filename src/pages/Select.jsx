@@ -1,18 +1,84 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaPlay } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
-
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const Select = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [analysisData, setAnalysisData] = useState(null);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        // First try to get data from navigation state
+        let data = location.state?.analysisData;
+
+        // If not found, try sessionStorage as backup
+        if (!data) {
+            const storedData = sessionStorage.getItem('analysisData');
+            if (storedData) {
+                try {
+                    data = JSON.parse(storedData);
+                    console.log('Retrieved analysis data from sessionStorage');
+                } catch (e) {
+                    console.error('Failed to parse stored analysis data:', e);
+                }
+            }
+        }
+
+        if (!data) {
+            console.error('No analysis data available');
+            setError('No analysis data available. Please take a photo first.');
+            // Optionally redirect back to camera after a delay
+            setTimeout(() => {
+                navigate('/camera');
+            }, 3000);
+        } else {
+            console.log('Analysis data available:', data);
+            setAnalysisData(data);
+            // Clear sessionStorage after successful retrieval
+            sessionStorage.removeItem('analysisData');
+        }
+    }, [location.state, navigate]);
+
+    // If there's an error, show error message
+    if (error) {
+        return (
+            <div className="fixed inset-0 bg-white flex items-center justify-center">
+                <div className="text-center px-4">
+                    <h2 className="text-xl font-semibold mb-4">Error</h2>
+                    <p className="text-gray-600 mb-4">{error}</p>
+                    <p className="text-sm text-gray-500">Redirecting to camera...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // If no analysis data yet, show loading
+    if (!analysisData) {
+        return (
+            <div className="fixed inset-0 bg-white flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading analysis data...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="fixed inset-0 bg-white overflow-hidden">
-
             <div className="absolute top-10 left-8 text-left mt-5 z-10">
                 <h1 className="text-base font-semibold leading-[24px] tracking-tight">A.I. ANALYSIS</h1>
                 <p className="text-sm mt-1 text-muted-foreground uppercase leading-[24px]">
                     A.I. has estimated the following.<br />Fix estimated information if needed.
                 </p>
+                {/* Debug info - remove in production */}
+                {process.env.NODE_ENV === 'development' && (
+                    <div className="mt-2 text-xs text-gray-500">
+                        <p>Data received: {analysisData ? 'Yes' : 'No'}</p>
+                        {analysisData && <p>Keys: {Object.keys(analysisData).join(', ')}</p>}
+                    </div>
+                )}
             </div>
 
             <div className="flex flex-col items-center justify-center h-full">
@@ -49,7 +115,7 @@ const Select = () => {
                     </div>
                     <div className="relative z-10 grid grid-cols-3 grid-rows-3 gap-0">
                         <div className="flex items-center justify-center col-start-2">
-                            <Link to="/summary">
+                            <Link to="/summary" state={{ analysisData }}>
                                 <button
                                     className="w-[153.88px] h-[153.88px] bg-gray-200 hover:bg-gray-300 transform rotate-45 flex items-center justify-center -m-5 cursor-pointer font-semibold leading-[24px] tracking-tight uppercase hover:scale-[1.05] transition-transform duration-300"
                                 >
@@ -98,7 +164,7 @@ const Select = () => {
                             </div>
                         </div>
                     </Link>
-                    <Link to="/summary">
+                    <Link to="/summary" state={{ analysisData }}>
                         <div>
                             <div className="w-12 h-12 flex items-center justify-center border border-[#1A1B1C] rotate-45 scale-[1] sm:hidden">
                                 <span className="rotate-[-45deg] text-xs font-semibold sm:hidden">SUM</span>
