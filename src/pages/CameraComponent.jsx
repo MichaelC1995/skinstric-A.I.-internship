@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaArrowLeft, FaArrowRight, FaCamera, FaSyncAlt } from 'react-icons/fa';
+import { FaArrowLeft, FaArrowRight, FaCamera } from 'react-icons/fa';
 import { MdRadioButtonUnchecked } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
 import { useCamera } from '../context/CameraContext';
@@ -14,13 +14,13 @@ const CameraComponent = () => {
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState(null);
     const [analysisData, setAnalysisData] = useState(null);
-    const [facingMode, setFacingMode] = useState('user'); // 'user' or 'environment'
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
     const navigate = useNavigate();
 
     useEffect(() => {
         setIsCameraViewActive(true);
+        // Initialize camera automatically on mount
         initializeCamera();
         return () => {
             setIsCameraViewActive(false);
@@ -29,15 +29,37 @@ const CameraComponent = () => {
         };
     }, [setIsCameraViewActive, setNavbarText]);
 
+    // Assign stream to videoRef when showCameraView and stream are ready
     useEffect(() => {
         if (showCameraView && stream && videoRef.current) {
+            console.log('Assigning stream to videoRef');
             videoRef.current.srcObject = stream;
-            videoRef.current.play().catch(err => {
-                console.error('Video play failed:', err.message);
-                setError(`Failed to play video: ${err.message}`);
-            });
+
+            // Wait for metadata to load before playing
+            const handleLoadedMetadata = () => {
+                console.log('Video metadata loaded:', videoRef.current?.videoWidth, videoRef.current?.videoHeight);
+                videoRef.current.play()
+                    .then(() => console.log('Video playback started successfully'))
+                    .catch(err => {
+                        console.error('Video play failed:', err.name, err.message);
+                        // Only show error if it's not an abort error
+                        if (err.name !== 'AbortError') {
+                            setError(`Failed to play video: ${err.message}`);
+                        }
+                    });
+            };
+
+            // Add event listener for metadata loaded
+            videoRef.current.addEventListener('loadedmetadata', handleLoadedMetadata);
+
+            // Cleanup function to remove event listener
+            return () => {
+                if (videoRef.current) {
+                    videoRef.current.removeEventListener('loadedmetadata', handleLoadedMetadata);
+                }
+            };
         } else if (showCameraView && stream && !videoRef.current) {
-            console.error('videoRef.current is null');
+            console.error('videoRef.current is null after showCameraView');
             setError('Video element not found. Please try again.');
         }
     }, [showCameraView, stream]);
@@ -50,6 +72,7 @@ const CameraComponent = () => {
         if (videoRef.current) {
             videoRef.current.srcObject = null;
         }
+        console.log('Camera cleaned up');
     };
 
     const initializeCamera = async () => {
@@ -59,15 +82,15 @@ const CameraComponent = () => {
             const [mediaStream] = await Promise.all([
                 navigator.mediaDevices.getUserMedia({
                     video: {
-                        width: 640,
-                        height: 480,
-                        facingMode: facingMode
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        facingMode: 'user'
                     },
                     audio: false
                 }),
                 new Promise(resolve => setTimeout(resolve, 500))
             ]);
-            console.log('Media stream obtained, tracks:', mediaStream.getVideoTracks().length);
+            console.log('Media stream obtained:', mediaStream);
             setStream(mediaStream);
             setShowCameraLoading(false);
             setShowCameraView(true);
@@ -75,21 +98,15 @@ const CameraComponent = () => {
             console.error('Camera access failed:', err.name, err.message);
             setShowCameraLoading(false);
             if (err.name === 'NotAllowedError') {
-                setError('Camera access denied. Please allow camera access in your browser settings and try again.');
+                setError('Camera access denied. Please allow camera access and try again.');
             } else if (err.name === 'NotFoundError') {
-                setError('No camera found. Please ensure a camera is available.');
+                setError('No camera found. Please connect a camera.');
             } else if (err.name === 'NotSupportedError') {
                 setError('Camera not supported by this browser.');
             } else {
                 setError(`Failed to access camera: ${err.message}`);
             }
         }
-    };
-
-    const switchCamera = () => {
-        cleanupCamera();
-        setFacingMode(prev => prev === 'user' ? 'environment' : 'user');
-        initializeCamera();
     };
 
     const handleCameraCapture = () => {
@@ -105,16 +122,16 @@ const CameraComponent = () => {
             }
 
             setTimeout(() => {
-                canvas.width = 640;
-                canvas.height = 480;
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
                 context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
                 const base64Image = canvas.toDataURL('image/jpeg', 0.8);
                 console.log('Captured base64 image length:', base64Image.length);
-                console.log('Base64 image prefix:', base64Image.substring(0, 30));
+                console.log('Base64 image preview:', base64Image.substring(0, 100));
 
-                if (base64Image.length < 1000 || !base64Image.startsWith('data:image/jpeg;base64,')) {
-                    console.error('Invalid base64 image: length or format incorrect');
+                if (base64Image.length < 100) {
+                    console.error('Captured image is too small or invalid');
                     setError('Failed to capture valid image. Please try again.');
                     return;
                 }
@@ -138,10 +155,12 @@ const CameraComponent = () => {
         setIsUploading(true);
         setError(null);
         try {
-            if (!base64String || base64String.length < 1000 || !base64String.startsWith('data:image/jpeg;base64,')) {
-                console.error('Invalid image data: empty or incorrect format');
+            if (!base64String || base64String.length < 100) {
+                console.error('Invalid image data: empty or too small');
                 throw new Error('Invalid image data: empty or too small');
             }
+            console.log('Uploading image, length:', base64String.length);
+            console.log('Base64 image start:', base64String.substring(0, 100));
             const response = await fetch('https://us-central1-api-skinstric-ai.cloudfunctions.net/skinstricPhaseTwo', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -149,9 +168,9 @@ const CameraComponent = () => {
             });
             const result = await response.json();
             console.log('API response:', result);
-            console.log('API status:', response.status);
+            console.log('API response headers:', Object.fromEntries(response.headers.entries()));
             if (!response.ok) {
-                console.error('API error:', result.message || 'No analysis data');
+                console.error('API error details:', result);
                 throw new Error(`Upload failed: ${result.message || 'No analysis data'}`);
             }
             setAnalysisData(result);
@@ -159,9 +178,9 @@ const CameraComponent = () => {
             alert('Image successfully analyzed!');
             navigate('/select', { state: { analysisData: result } });
         } catch (err) {
-            console.error('Upload error:', err.message);
+            console.error('Upload error:', err.name, err.message);
             setError(`Failed to upload image: ${err.message}`);
-            setShowPreview(true);
+            setShowPreview(true); // Return to preview for retry
         } finally {
             setIsUploading(false);
         }
@@ -198,7 +217,8 @@ const CameraComponent = () => {
                             playsInline
                             muted
                             className="w-full h-full object-cover z-[15]"
-                            style={{ display: 'block' }}
+                            style={{ display: 'block', transform: 'scaleX(-1)' }}
+                            onError={(e) => console.error('Video element error:', e)}
                         />
                     )}
 
@@ -213,20 +233,13 @@ const CameraComponent = () => {
                     </div>
 
                     {showCameraView && (
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 z-20 flex items-center space-x-2">
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 z-20 flex items-center">
                             <span className="text-white text-sm font-semibold mr-4">TAKE A PICTURE</span>
                             <button
                                 onClick={handleCameraCapture}
                                 className="w-16 h-16 bg-white rounded-full border-4 border-gray-200 hover:scale-110 flex items-center justify-center"
                             >
                                 <FaCamera className="w-8 h-8 text-black" />
-                            </button>
-                            <button
-                                onClick={switchCamera}
-                                aria-label="Switch Camera"
-                                className="w-12 h-12 bg-white rounded-full border-2 border-gray-200 hover:scale-110 flex items-center justify-center"
-                            >
-                                <FaSyncAlt className="w-6 h-6 text-black" />
                             </button>
                         </div>
                     )}
