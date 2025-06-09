@@ -129,7 +129,6 @@ const Camera = () => {
             return;
         }
 
-
         if (!file.type.startsWith('image/')) {
             console.error('Invalid file type:', file.type);
             setError('Please select a valid image file');
@@ -442,9 +441,6 @@ const Camera = () => {
                                         height: `${size}vw`,
                                         maxWidth: `${300 - i * 30}px`,
                                         maxHeight: `${300 - i * 30}px`,
-                                        left: '50%',
-                                        top: '50%',
-                                        transform: 'translate(-50%, -50%) rotate(45deg)',
                                     }}
                                 />
                             </div>
@@ -620,9 +616,6 @@ const Camera = () => {
                                     height: `${size}vw`,
                                     maxWidth: `${300 - i * 30}px`,
                                     maxHeight: `${300 - i * 30}px`,
-                                    left: '50%',
-                                    top: '50%',
-                                    transform: 'translate(-50%, -50%) rotate(45deg)',
                                 }}
                             />
                         </div>

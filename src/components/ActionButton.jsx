@@ -68,9 +68,6 @@ const DottedBorder = ({ sizes, baseOpacity = 5, animation }) => (
                     style={{
                         width: `${size}px`,
                         height: `${size}px`,
-                        left: "50%",
-                        top: "50%",
-                        transform: "translate(-50%, -50%) rotate(45deg)",
                     }}
                 />
             </div>

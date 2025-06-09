@@ -255,7 +255,7 @@ const Summary = () => {
                         </p>
 
                         {/* Progress bar container - responsive positioning */}
-                        <div className="relative md:absolute md:bottom-1/2 md:right-1/2 md:translate-x-[90%] md:translate-y-[70%] w-[160px] h-[160px] md:w-[min(70%,300px)] md:h-[min(70%,300px)] aspect-square mb-6 md:mb-0">
+                        <div className="relative md:absolute md:bottom-1/2 md:right-1/2 md:translate-x-[90%] md:translate-y-[60%] w-[160px] h-[160px] md:w-[min(70%,300px)] md:h-[min(70%,300px)] aspect-square mb-6 md:mb-0">
                             <div
                                 style={{
                                     width: '100%',
