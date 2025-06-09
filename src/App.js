@@ -5,7 +5,7 @@ import Testing from "./pages/Testing";
 import Result from "./pages/Result";
 import Select from "./pages/Select";
 import Summary from "./pages/Summary";
-import Camera from "./pages/Camera";
+import Camera from "./pages/CameraComponent";
 import {AnalysisProvider} from "./context/AnalysisContext";
 import {CameraProvider} from "./context/CameraContext";
 

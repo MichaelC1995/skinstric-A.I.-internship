@@ -14,13 +14,14 @@ const CameraComponent = () => {
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState(null);
     const [analysisData, setAnalysisData] = useState(null);
-    const [cameraStarted, setCameraStarted] = useState(false);
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
     const navigate = useNavigate();
 
     useEffect(() => {
         setIsCameraViewActive(true);
+        // Initialize camera automatically on mount
+        initializeCamera();
         return () => {
             setIsCameraViewActive(false);
             setNavbarText('');
@@ -87,11 +88,6 @@ const CameraComponent = () => {
         }
     };
 
-    const startCamera = () => {
-        setCameraStarted(true);
-        initializeCamera();
-    };
-
     const handleCameraCapture = () => {
         if (videoRef.current && canvasRef.current) {
             const video = videoRef.current;
@@ -110,6 +106,7 @@ const CameraComponent = () => {
 
             const base64Image = canvas.toDataURL('image/jpeg', 0.8);
             console.log('Captured base64 image length:', base64Image.length);
+            console.log('Base64 image preview:', base64Image.substring(0, 100)); // Log start of base64 for inspection
 
             if (stream) {
                 stream.getTracks().forEach(track => track.enabled = false);
@@ -135,7 +132,8 @@ const CameraComponent = () => {
         setIsUploading(true);
         setError(null);
         try {
-            if (!base64String || base64String.length < 100) {
+            if (!base64String || base64Image.length < 100) {
+                console.error('Invalid image data: empty or too small');
                 throw new Error('Invalid image data: empty or too small');
             }
             console.log('Uploading image, length:', base64String.length);
@@ -147,7 +145,8 @@ const CameraComponent = () => {
             const result = await response.json();
             console.log('API response:', result);
             if (!response.ok) {
-                throw new Error(`Upload failed: ${result.message || 'Unknown error'}`);
+                console.error('API error details:', result);
+                throw new Error(`Upload failed: ${result.message || 'No analysis data'}`);
             }
             setAnalysisData(result);
             setNavbarText('ANALYSIS');
@@ -156,9 +155,9 @@ const CameraComponent = () => {
         } catch (err) {
             console.error('Upload error:', err.name, err.message);
             setError(`Failed to upload image: ${err.message}`);
+            setShowPreview(true); // Show preview again to allow retry
         } finally {
             setIsUploading(false);
-            cleanupCamera();
         }
     };
 
@@ -167,24 +166,17 @@ const CameraComponent = () => {
         setShowCameraView(false);
         setShowPreview(false);
         setShowCameraLoading(false);
-        setCameraStarted(false);
         setNavbarText('');
         navigate('/result');
     };
 
+    const handleRetry = () => {
+        setError(null);
+        initializeCamera();
+    };
+
     return (
         <>
-            {!cameraStarted && (
-                <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
-                    <button
-                        onClick={startCamera}
-                        className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
-                    >
-                        Start Camera
-                    </button>
-                </div>
-            )}
-
             {(showCameraView || showCameraLoading || error) && !isUploading && !showPreview && (
                 <div className="fixed inset-0 bg-black z-10 overflow-hidden">
                     {showCameraView && (
@@ -405,10 +397,7 @@ const CameraComponent = () => {
                         <p className="text-red-600 mb-6 max-w-md mx-auto">{error}</p>
                         <div className="flex flex-col sm:flex-row justify-center gap-4">
                             <button
-                                onClick={() => {
-                                    setError(null);
-                                    setCameraStarted(false);
-                                }}
+                                onClick={handleRetry}
                                 className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
                             >
                                 Try Again
