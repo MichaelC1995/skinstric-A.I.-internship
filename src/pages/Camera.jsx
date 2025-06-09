@@ -14,9 +14,9 @@ const CameraComponent = () => {
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState(null);
     const [analysisData, setAnalysisData] = useState(null);
+    const [cameraStarted, setCameraStarted] = useState(false); // Added for user interaction
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
-    const loadingTimeoutRef = useRef(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -28,8 +28,7 @@ const CameraComponent = () => {
     }, [setIsCameraViewActive, setNavbarText]);
 
     useEffect(() => {
-        initializeCamera();
-
+        // Initialize camera only after user interaction (via startCamera)
         return () => {
             cleanupCamera();
         };
@@ -40,13 +39,10 @@ const CameraComponent = () => {
             stream.getTracks().forEach(track => track.stop());
             setStream(null);
         }
-        if (loadingTimeoutRef.current) {
-            clearTimeout(loadingTimeoutRef.current);
-            loadingTimeoutRef.current = null;
-        }
         if (videoRef.current) {
             videoRef.current.srcObject = null;
         }
+        console.log('Camera cleaned up');
     };
 
     const initializeCamera = async () => {
@@ -54,20 +50,26 @@ const CameraComponent = () => {
         setError(null);
         try {
             const mediaStream = await navigator.mediaDevices.getUserMedia({
-                video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
+                video: {
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    facingMode: 'user'
+                },
                 audio: false
             });
+            console.log('Media stream obtained:', mediaStream);
             setStream(mediaStream);
             setShowCameraLoading(false);
             setShowCameraView(true);
             if (videoRef.current) {
-                console.log('Assigning stream to video element:', mediaStream);
+                console.log('Assigning stream to videoRef');
                 videoRef.current.srcObject = mediaStream;
                 videoRef.current.play()
                     .then(() => console.log('Video playback started successfully'))
                     .catch(err => console.error('Video play failed:', err.name, err.message));
             } else {
                 console.error('videoRef.current is null');
+                setError('Video element not found. Please try again.');
             }
         } catch (err) {
             console.error('Camera access failed:', err.name, err.message);
@@ -79,22 +81,15 @@ const CameraComponent = () => {
             } else if (err.name === 'NotSupportedError') {
                 setError('Camera not supported by this browser.');
             } else {
-                setError('Failed to access camera. Please try again.');
+                setError(`Failed to access camera: ${err.message}`);
             }
         }
     };
 
-// In the return statement:
-    {showCameraView && (
-        <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            className="w-full h-full object-cover z-[15]"
-            style={{ transform: 'scaleX(-1)', display: 'block' }}
-        />
-    )}
+    const startCamera = () => {
+        setCameraStarted(true);
+        initializeCamera();
+    };
 
     const handleCameraCapture = () => {
         if (videoRef.current && canvasRef.current) {
@@ -102,11 +97,18 @@ const CameraComponent = () => {
             const canvas = canvasRef.current;
             const context = canvas.getContext('2d');
 
+            if (video.videoWidth === 0 || video.videoHeight === 0) {
+                console.error('Invalid video dimensions:', video.videoWidth, video.videoHeight);
+                setError('Camera feed not loaded. Please try again.');
+                return;
+            }
+
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
             const base64Image = canvas.toDataURL('image/jpeg', 0.8);
+            console.log('Captured base64 image length:', base64Image.length);
 
             if (stream) {
                 stream.getTracks().forEach(track => track.enabled = false);
@@ -116,6 +118,9 @@ const CameraComponent = () => {
             setShowCameraView(false);
             setShowPreview(true);
             setNavbarText('ANALYSIS');
+        } else {
+            console.error('Video or canvas ref is null:', { videoRef: !!videoRef.current, canvasRef: !!canvasRef.current });
+            setError('Failed to capture image. Please try again.');
         }
     };
 
@@ -125,29 +130,31 @@ const CameraComponent = () => {
         uploadImage(capturedImage);
     };
 
-
     const uploadImage = async (base64String) => {
         setIsUploading(true);
         setError(null);
-
         try {
+            if (!base64String || base64String.length < 100) {
+                throw new Error('Invalid image data: empty or too small');
+            }
+            console.log('Uploading image, length:', base64String.length);
             const response = await fetch('https://us-central1-api-skinstric-ai.cloudfunctions.net/skinstricPhaseTwo', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ image: base64String }),
             });
-
-            if (!response.ok) {
-                throw new Error('Failed to upload image.');
-            }
-
             const result = await response.json();
+            console.log('API response:', result);
+            if (!response.ok) {
+                throw new Error(`Upload failed: ${result.message || 'Unknown error'}`);
+            }
             setAnalysisData(result);
             setNavbarText('ANALYSIS');
             alert('Image successfully analyzed!');
             navigate('/select', { state: { analysisData: result } });
         } catch (err) {
-            setError(err.message);
+            console.error('Upload error:', err.name, err.message);
+            setError(`Failed to upload image: ${err.message}`);
         } finally {
             setIsUploading(false);
             cleanupCamera();
@@ -159,12 +166,24 @@ const CameraComponent = () => {
         setShowCameraView(false);
         setShowPreview(false);
         setShowCameraLoading(false);
+        setCameraStarted(false); // Reset camera start
         setNavbarText('');
         navigate('/result');
     };
 
     return (
         <>
+            {!cameraStarted && (
+                <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
+                    <button
+                        onClick={startCamera}
+                        className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                    >
+                        Start Camera
+                    </button>
+                </div>
+            )}
+
             {(showCameraView || showCameraLoading || error) && !isUploading && !showPreview && (
                 <div className="fixed inset-0 bg-black z-10 overflow-hidden">
                     {showCameraView && (
@@ -173,7 +192,10 @@ const CameraComponent = () => {
                             autoPlay
                             playsInline
                             muted
-                            className="w-full h-full object-cover z-15"
+                            className="w-full h-full object-cover z-[15]"
+                            style={{ display: 'block', transform: 'scaleX(-1)' }} // Mirror for front-facing camera
+                            onError={(e) => console.error('Video element error:', e)}
+                            onLoadedMetadata={() => console.log('Video metadata loaded:', videoRef.current?.videoWidth, videoRef.current?.videoHeight)}
                         />
                     )}
 
@@ -230,7 +252,7 @@ const CameraComponent = () => {
                     <img
                         src={capturedImage}
                         alt="Captured Photo"
-                        className="w-full h-full object-cover z-15"
+                        className="w-full h-full object-cover z-[15]"
                     />
 
                     <div className="absolute bottom-10 left-10 z-30 flex items-center">
@@ -285,7 +307,6 @@ const CameraComponent = () => {
 
             {showCameraLoading && (
                 <div className="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center px-4">
-
                     <div className="absolute inset-0 z-40">
                         {[70, 55, 40].map((size, i) => (
                             <div key={i} className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -306,7 +327,7 @@ const CameraComponent = () => {
                     </div>
                     <div className="absolute inset-0 flex items-center justify-center z-50">
                         <img
-                            src="/camera.jpg"
+                            src="/camera.jpg" // Ensure this is accessible at https://your-app.vercel.app/camera.jpg
                             alt="Camera Icon"
                             className="w-20 h-20 md:w-24 md:h-24 object-contain"
                         />
@@ -385,7 +406,7 @@ const CameraComponent = () => {
                             <button
                                 onClick={() => {
                                     setError(null);
-                                    initializeCamera();
+                                    setCameraStarted(false); // Reset to show Start Camera button
                                 }}
                                 className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
                             >
