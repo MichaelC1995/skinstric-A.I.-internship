@@ -8,19 +8,15 @@ const Summary = () => {
     const location = useLocation();
     const { analysisData: contextAnalysisData } = useAnalysis();
 
-    // Get analysis data from multiple sources with proper fallback
     const getAnalysisData = () => {
-        // First try location.state
         if (location.state?.analysisData) {
             return location.state.analysisData;
         }
 
-        // Then try context
         if (contextAnalysisData) {
             return contextAnalysisData;
         }
 
-        // Finally try sessionStorage
         const storedData = sessionStorage.getItem('analysisData');
         if (storedData) {
             try {
@@ -41,7 +37,6 @@ const Summary = () => {
     const [selectedCategory, setSelectedCategory] = useState('race');
     const [selectedLabel, setSelectedLabel] = useState('');
 
-    // Log analysisData for debugging - only keep error logging
     useEffect(() => {
         if (!analysisData) {
             console.error('Summary: No analysisData available');
@@ -62,7 +57,6 @@ const Summary = () => {
     };
 
     useEffect(() => {
-        // Handle both data.race and direct race structures
         const raceData = analysisData?.data?.race || analysisData?.race;
         if (raceData && selectedRace === '') {
             const [predictedRace, raceConfidence] = findHighestConfidence(raceData);
@@ -93,7 +87,6 @@ const Summary = () => {
         );
     }
 
-    // Handle both data structures: analysisData.data or direct analysisData
     const dataSource = analysisData.data || analysisData;
     const { age, gender, race } = dataSource;
 
@@ -245,16 +238,13 @@ const Summary = () => {
                     </div>
 
                     <div className="relative bg-gray-100 p-4 flex flex-col items-center justify-center md:border-t md:min-h-0 overflow-hidden min-h-[300px] md:min-h-0">
-                        {/* Mobile label - positioned at top center */}
                         <p className="block md:hidden text-2xl font-normal mb-6 text-center">
                             {selectedLabel}
                         </p>
-                        {/* Desktop label - positioned at top left */}
                         <p className="hidden md:block md:absolute text-[40px] mb-2 left-5 top-2">
                             {selectedLabel}
                         </p>
 
-                        {/* Progress bar container - responsive positioning */}
                         <div className="relative md:absolute md:bottom-1/2 md:right-1/2 md:translate-x-[90%] md:translate-y-[60%] w-[160px] h-[160px] md:w-[min(70%,300px)] md:h-[min(70%,300px)] aspect-square mb-6 md:mb-0">
                             <div
                                 style={{
@@ -308,7 +298,6 @@ const Summary = () => {
                             </div>
                         </div>
 
-                        {/* Bottom text - responsive positioning */}
                         <p className="relative md:absolute text-xs text-[#A0A4AB] md:text-sm lg:text-base font-normal mb-1 leading-[24px] text-center px-4 md:bottom-[-15%] md:left-[22%] lg:left-[30%] xl:left-[40%] 2xl:left-[45%] md:text-left md:px-0">
                             {selectedCategory === 'race'
                                 ? 'If A.I. estimate is wrong, select the correct one.'
